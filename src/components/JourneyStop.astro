@@ -1,0 +1,129 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Terminal from './Terminal.astro';
+
+interface Props {
+  stop: CollectionEntry<'journey'>;
+  /** The first stop carries the page's h1 */
+  first?: boolean;
+}
+
+const { stop, first = false } = Astro.props;
+const { id, data } = stop;
+const { Content } = await render(stop);
+const hasBody = Boolean(stop.body?.trim());
+const Heading = first ? 'h1' : 'h2';
+---
+<section class="stop" id={id} aria-labelledby={`h-${id}`} data-stop>
+  <span class="stop__node" aria-hidden="true"></span>
+  <p class="log">commit <b>{data.commit}</b> · {data.message}</p>
+  <Heading class="sr-only" id={`h-${id}`}>{data.heading}</Heading>
+  {data.lines.map((line) => (
+    <Fragment>
+      <p class="label">{line.label}</p>
+      {line.games ? (
+        <div class="big game">
+          <span class="game__name" data-game-name>{line.text}</span>
+          <button type="button" class="game__btn" aria-label="Pick another favourite game" data-games={JSON.stringify(line.games)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4" /></svg>
+          </button>
+        </div>
+      ) : (
+        <p class="big">{line.text}{line.link && [' ', <a href={line.link.href}>{line.link.text}</a>]}</p>
+      )}
+    </Fragment>
+  ))}
+  {hasBody && (
+    <Terminal class="notes" title={`kieron@portfolio:~/journey/${id}`}>
+      <div class="notes__body">
+        <p class="prompt"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~/journey</span>$ cat {data.file}</p>
+        <Content />
+      </div>
+    </Terminal>
+  )}
+</section>
+
+<style>
+  /* Each stop is a container, so the big type is sized by the room beside the branch, not the window */
+  .stop {
+    container-type: inline-size;
+    position: relative;
+    display: grid;
+    align-content: center;
+    min-height: calc(100vh - var(--bar-h));
+    min-height: calc(100svh - var(--bar-h));
+    padding-block: 64px;
+  }
+
+  /* Sits on the branch, with a ring of page colour cutting the line either side */
+  .stop__node {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--lane) / -2 - var(--gutter));
+    width: 32px;
+    height: 32px;
+    translate: -50% -50%;
+    border: 4px solid var(--page);
+    border-radius: 50%;
+    background: var(--node);
+    transition: scale .3s ease, background-color .3s ease;
+  }
+  @media (min-width: 768px) {
+    .stop__node { width: 44px; height: 44px; }
+  }
+  .stop:global(.is-here) .stop__node { background: var(--node-on); scale: 1.2; }
+
+  .log { margin: 0 0 18px; color: var(--muted); font: 14px/1.5 var(--font-term); }
+  .log b { color: var(--heading); font-weight: 400; }
+
+  .label { margin: 0; color: var(--text-2); font-size: clamp(16px, 2vw, 20px); font-weight: 500; }
+  /* The longest word ("technologies") is about 6.7em wide, so 14cqi always fits it on one line */
+  .big {
+    margin: 0 0 clamp(16px, 4vh, 44px);
+    color: var(--text-strong);
+    font-size: min(clamp(34px, 14cqi, 80px), 11vh);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: -.045em;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+  }
+  .big a { color: inherit; text-decoration-color: var(--accent); text-decoration-thickness: .06em; text-underline-offset: .12em; }
+  .big a:hover { color: var(--accent-hover); }
+
+  /* The button keeps its place beside the name: a long name shrinks rather than pushing it onto a new line */
+  .game { display: flex; align-items: center; gap: 12px; }
+  .game__name { font-size: min(1em, calc((100cqi - 68px) / 6.2)); }
+  .game__btn {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .game__btn:hover { background: var(--surface-raised); }
+  .game__btn svg { width: 30px; height: 30px; }
+
+  .notes { max-width: 720px; margin-top: clamp(20px, 4vh, 40px); }
+  .notes__body { padding: 18px 16px 20px; font-size: 15px; line-height: 1.65; }
+  @media (min-width: 768px) {
+    .notes__body { padding: 22px 26px 24px; }
+  }
+  .notes__body :global(p) { max-width: 62ch; margin: 0 0 14px; }
+  .notes__body :global(h3) { margin: 22px 0 8px; color: var(--heading); font-size: 16px; font-weight: 700; }
+  .notes__body :global(h3)::before { content: "# "; }
+  .notes__body :global(ul) { margin: 0 0 16px; padding: 0; list-style: none; color: var(--text-2); }
+  .notes__body :global(li)::before { content: "● "; color: var(--prompt-user); }
+  .notes__body :global(p:last-child) { margin-bottom: 0; }
+  .notes__body :global(a) { display: inline-flex; align-items: center; min-height: 44px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stop:global(.is-here) .stop__node { scale: 1; }
+  }
+</style>

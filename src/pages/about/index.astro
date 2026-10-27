@@ -1,6 +1,95 @@
 ---
+import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import JourneyStop from '../../components/JourneyStop.astro';
+
+const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.data.order);
 ---
-<Base title="About" description="My journey into web development.">
-  <h1 style="padding: 24px var(--gutter)">About</h1>
+<Base title="About" description="How I got into web development: my degree, the Scion Coalition Scheme at Netmatters, what I'm into, and where to find my work.">
+  <nav class="map" aria-label="Journey">
+    <ol>
+      {stops.map(({ id, data }) => (
+        <li><a href={`#${id}`} aria-label={`${data.short}, ${data.heading}`}>{data.short}</a></li>
+      ))}
+    </ol>
+  </nav>
+
+  <div class="journey" data-journey>
+    <div class="branch" aria-hidden="true">
+      <div class="branch__track"></div>
+      <div class="branch__drawn" data-drawn></div>
+    </div>
+    {stops.map((stop, i) => <JourneyStop stop={stop} first={i === 0} />)}
+  </div>
 </Base>
+
+<script>
+  import { startJourney } from '../../scripts/journey';
+
+  startJourney(document.querySelector<HTMLElement>('[data-journey]')!, document.querySelector<HTMLElement>('.map')!);
+</script>
+
+<style>
+  /* The branch runs down a lane on the left; the stops sit to its right */
+  .journey {
+    --lane: 40px;
+    position: relative;
+    padding: 0 var(--gutter) 0 calc(var(--lane) + var(--gutter));
+  }
+  @media (min-width: 768px) {
+    .journey { --lane: 120px; }
+  }
+
+  .branch {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--lane) / 2);
+    width: 4px;
+    translate: -50% 0;
+    pointer-events: none;
+  }
+  .branch__track,
+  .branch__drawn { position: absolute; inset: 0; border-radius: 2px; }
+  .branch__track { background: repeating-linear-gradient(to bottom, var(--surface-raised) 0 10px, transparent 10px 16px); }
+  /* Drawn in full until the script takes over, so the page reads the same without it */
+  .branch__drawn { background: var(--node-on); transform-origin: top; transform: scaleY(var(--p, 1)); }
+
+  /* The jump map: fixed in the corner, or at the top of the page on short screens where it would cover the stops */
+  .map { margin: 12px var(--gutter) 0; }
+  .map ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: fit-content;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--term-header);
+    border-radius: var(--radius-term);
+    box-shadow: var(--shadow-term);
+  }
+  .map a {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 8px;
+    border-radius: 6px;
+    color: var(--text-2);
+    font: 13px var(--font-term);
+    text-decoration: none;
+  }
+  .map a:hover { color: var(--text); background: var(--surface-raised); }
+  .map a[aria-current="step"] { background: var(--term-body); color: var(--text); }
+  .map a:focus-visible { outline-offset: -2px; }
+  @media (min-height: 560px) {
+    .map {
+      position: fixed;
+      z-index: 10;
+      right: max(12px, env(safe-area-inset-right));
+      bottom: max(12px, env(safe-area-inset-bottom));
+      margin: 0;
+    }
+  }
+</style>

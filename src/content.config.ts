@@ -32,4 +32,33 @@ const projects = defineCollection({
     }),
 });
 
-export const collections = { projects };
+// The about page's journey: one Markdown file per stop. The body, if there is one, is shown
+// as a file in a terminal under the stop's big type.
+const journey = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/journey' }),
+  schema: z.object({
+    order: z.number().int(),
+    /** The stop's heading for screen readers; the big type carries it visually */
+    heading: z.string(),
+    /** Its name in the jump map */
+    short: z.string().max(8),
+    commit: z.string(),
+    message: z.string(),
+    lines: z
+      .array(
+        z.strictObject({
+          label: z.string(),
+          text: z.string(),
+          /** Follows the text, e.g. "See my" + "projects" */
+          link: z.strictObject({ text: z.string(), href: z.string() }).optional(),
+          /** Turns the line into the game picker; text is the game shown without JavaScript */
+          games: z.array(z.string()).min(2).optional(),
+        }),
+      )
+      .min(1),
+    /** The file name shown in the prompt above the body */
+    file: z.string().default('notes.txt'),
+  }),
+});
+
+export const collections = { projects, journey };
