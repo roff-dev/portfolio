@@ -1,16 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
-import Terminal from '../components/Terminal.astro';
+import ProjectWindow from '../components/ProjectWindow.astro';
 ---
 <Base>
   <Hero />
-  <section class="screen" id="projects" aria-label="Projects">
-    <Terminal title="kieron@portfolio:~/projects"><p class="stub">Projects</p></Terminal>
-  </section>
+  <ProjectWindow />
 </Base>
-
-<style>
-  .screen { min-height: 100vh; min-height: calc(100svh - var(--bar-h)); display: grid; place-items: center; padding: 24px var(--gutter); }
-  .stub { margin: 0; padding: 20px; font-size: 18px; font-weight: 400; }
-</style>
