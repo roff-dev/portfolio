@@ -1,0 +1,112 @@
+---
+import Terminal from './Terminal.astro';
+---
+<section class="hero" aria-label="Introduction">
+  <canvas class="hero__bg" aria-hidden="true"></canvas>
+  <Terminal class="hero__term" title="console@kieron-oates:~/portfolio" raised>
+    <h1 class="hero__line">
+      <span class="sr-only">Kieron Oates, web developer</span>
+      <span aria-hidden="true">$ <span data-typed></span><span class="hero__caret"></span></span>
+    </h1>
+  </Terminal>
+  <a class="hero__next" href="#projects" aria-label="Skip to projects">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+  </a>
+</section>
+
+<script>
+  import { startTyping } from '../scripts/typing';
+  import { startBackground } from '../scripts/background';
+
+  const hero = document.querySelector<HTMLElement>('.hero')!;
+  startTyping(hero.querySelector<HTMLElement>('[data-typed]')!);
+  startBackground(hero.querySelector<HTMLCanvasElement>('.hero__bg')!, hero);
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    place-items: center;
+    min-height: 100vh;
+    min-height: calc(100svh - var(--bar-h));
+    /* No side padding: the widths below are of the whole content area, as before */
+    padding: 24px 0 88px;
+  }
+
+  /* Fixed behind everything on the home page; the projects window covers it further down */
+  .hero__bg {
+    --lines-dot: #4a4a4a;
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* The old widths: 90% of the content area, 70% from 768px, 55% from 992px */
+  .hero :global(.hero__term) { width: 90%; }
+  @media (min-width: 768px) { .hero :global(.hero__term) { width: 70%; } }
+  @media (min-width: 992px) { .hero :global(.hero__term) { width: 55%; } }
+
+  /* The old terminal was 400px tall whatever the text, with its 36px bar */
+  .hero__line {
+    margin: 0;
+    padding: 20px;
+    min-height: 364px;
+    font-size: clamp(22px, 8vw, 30px);
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  @media (min-width: 768px) {
+    .hero__line { padding-top: 10px; font-size: clamp(30px, 3.4vw, 40px); }
+  }
+
+  .hero__line :global(b) { font-weight: 700; }
+  .hero__line :global(.t-key) { color: var(--keyword); }
+  .hero__line :global(.t-mute) { color: var(--muted); }
+
+  /* The old Typed.js cursor: a thin bar */
+  .hero__caret {
+    display: inline-block;
+    width: .07em;
+    height: 1em;
+    margin-left: .1em;
+    vertical-align: -.12em;
+    background: var(--text);
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .hero__next {
+    position: absolute;
+    bottom: max(15px, env(safe-area-inset-bottom));
+    left: 50%;
+    translate: -50% 0;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 60px;
+    border-radius: 10px;
+    color: var(--text-strong);
+  }
+  .hero__next svg { width: 50px; height: 50px; transition: scale .3s ease; }
+  @media (hover: hover) {
+    .hero__next:hover { background: linear-gradient(to bottom, var(--surface), transparent 50%, var(--surface)); }
+    .hero__next:hover svg { scale: 1.1; }
+  }
+
+  /* Short screens (a phone on its side, a foldable's cover screen): type sized by height, no arrow */
+  @media (max-height: 520px) {
+    .hero { padding-bottom: 24px; }
+    .hero__line { min-height: 0; font-size: clamp(18px, 5.5vh, 30px); }
+    .hero__next { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__caret { animation: none; }
+  }
+</style>

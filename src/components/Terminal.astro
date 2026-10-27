@@ -46,17 +46,17 @@ const { title, raised = false, class: className, ...attrs } = Astro.props;
   }
   .term__lights { display: flex; gap: 8px; }
   .term__light { width: 12px; height: 12px; border: 0; padding: 0; border-radius: 50%; background: var(--c); }
-  /* The title stays centred on the window, not on the space beside the lights */
+  /* The title stays centred on the window, not on the space beside the lights, and wraps rather than hiding the path */
   .term__title {
     flex: 1;
     min-width: 0;
     margin-right: 56px;
+    padding-block: 8px;
     text-align: center;
     color: var(--text-2);
     font-size: 13px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
   }
   .prompt { margin: 0 0 10px; overflow-wrap: anywhere; }
   .prompt__user { color: var(--prompt-user); }

@@ -1,13 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
 import Terminal from '../components/Terminal.astro';
 ---
 <Base>
-  <section class="screen" aria-label="Introduction">
-    <Terminal title="console@kieron-oates:~/portfolio" raised>
-      <h1 class="stub">Kieron Oates, web developer</h1>
-    </Terminal>
-  </section>
+  <Hero />
   <section class="screen" id="projects" aria-label="Projects">
     <Terminal title="kieron@portfolio:~/projects"><p class="stub">Projects</p></Terminal>
   </section>

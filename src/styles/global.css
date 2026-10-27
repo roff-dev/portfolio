@@ -12,7 +12,6 @@ body {
   margin: 0;
   font-family: var(--font-ui);
   color: var(--text-strong);
-  background: var(--page);
 }
 
 main { flex: 1 0 auto; }
