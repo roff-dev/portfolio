@@ -1,0 +1,111 @@
+---
+import { site } from '../site';
+
+const path = Astro.url.pathname;
+const links = [
+  { href: '/about/', label: 'About' },
+  { href: '/#projects', label: 'Projects' },
+  { href: '/code/', label: 'Code' },
+];
+---
+<header class="nav">
+  <a class="nav__logo" href="/" aria-current={path === '/' ? 'page' : undefined}>
+    <img src="/logo.png" alt="Kieron Oates, home" width="43" height="43" />
+  </a>
+  <nav class="nav__menu" aria-label="Main">
+    <ul class="nav__links">
+      {links.map(({ href, label }) => (
+        <li><a href={href} aria-current={path === href ? 'page' : undefined}>{label}</a></li>
+      ))}
+    </ul>
+    <ul class="nav__social">
+      <li>
+        <a href={site.social.linkedin} aria-label="LinkedIn" rel="me">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm7 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C21.6 8.65 22 11.3 22 14.7V21h-4v-5.6c0-1.34-.03-3.06-1.86-3.06-1.87 0-2.15 1.46-2.15 2.96V21h-4V9Z" /></svg>
+        </a>
+      </li>
+      <li>
+        <a href={site.social.github} aria-label="GitHub" rel="me">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z" /></svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<style>
+  /* Top bar on phones and short screens; the established 200px sidebar when there is room */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--bar-h);
+    padding: 8px max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
+    background: var(--surface);
+  }
+  .nav__menu { display: flex; align-items: center; margin-left: auto; }
+  .nav ul { display: flex; margin: 0; padding: 0; list-style: none; }
+
+  .nav__logo { display: grid; place-items: center; flex: 0 0 auto; min-width: 44px; min-height: 44px; }
+  .nav__logo img { width: 43px; height: 43px; image-rendering: pixelated; transition: filter .6s ease, transform .6s ease; }
+  .nav__logo:hover img { filter: drop-shadow(0 0 8px rgba(50, 50, 50, .6)); transform: scale(1.05) translateY(-2px); }
+
+  .nav__links a {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 7px;
+    color: var(--text-strong);
+    font-weight: 500;
+    letter-spacing: -1px;
+    text-decoration: none;
+    transition: letter-spacing .3s ease;
+  }
+  /* The old hover: a line draws in from each corner while the letters spread */
+  .nav__links a::before,
+  .nav__links a::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: var(--surface-raised);
+    transition: width .3s ease;
+  }
+  .nav__links a::before { top: 0; left: 0; }
+  .nav__links a::after { bottom: 0; right: 0; }
+  @media (hover: hover) {
+    .nav__links a:hover { letter-spacing: 2px; }
+    .nav__links a:hover::before,
+    .nav__links a:hover::after { width: 100%; }
+  }
+  .nav__links a[aria-current="page"]::before,
+  .nav__links a[aria-current="page"]::after { width: 100%; background: var(--term-border); }
+
+  .nav__social a { display: grid; place-items: center; width: 44px; height: 44px; color: var(--text-strong); }
+  .nav__social svg { width: 20px; height: 20px; fill: currentColor; }
+  @media (hover: hover) {
+    .nav__social a[aria-label="LinkedIn"]:hover { color: #0077b5; }
+    .nav__social a[aria-label="GitHub"]:hover { color: var(--text-2); }
+  }
+
+  @media (min-width: 768px) and (min-height: 560px) {
+    .nav {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: var(--nav-w);
+      flex-direction: column;
+      gap: 0;
+      padding: 28px 0 20px;
+      overflow-y: auto;
+    }
+    .nav__logo img { width: 129px; height: 129px; }
+    .nav__menu { flex-direction: column; width: 100%; margin: 32px 0 0; }
+    .nav__links { flex-direction: column; width: 100%; }
+    .nav__links a { min-height: 52px; padding: 0 20px; font-size: 1.05rem; }
+    .nav__social { margin-top: 24px; gap: 4px; }
+  }
+</style>

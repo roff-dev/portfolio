@@ -1,0 +1,57 @@
+/* Locked palette and type from the old site's scss/utilities/_config.scss and _scs.scss.
+   Changed at the checkpoint only for contrast (--muted, --placeholder) and the terminal face. */
+:root {
+  --page: #181818;
+  --surface: #202020;
+  --surface-raised: #323232;
+  --term-body: #1e1e1e;
+  --term-header: #383838;
+  --term-border: #444;
+
+  --text: #f0f0f0;
+  --text-strong: #fff;
+  --text-2: #ccc;
+  --muted: #8a8a8a;
+  --placeholder: #8a8a8a;
+
+  --prompt-user: #4caf50;
+  --prompt-path: #2196f3;
+  --heading: #ffc107;
+  --accent: #4d8fcc;
+  --accent-hover: #88b4dd;
+  --keyword: #ffa500;
+
+  --light-red: #ff5f57;
+  --light-yellow: #febc2e;
+  --light-green: #28c840;
+
+  --lines: #404040;
+  --node: #4d4d4d;
+  --node-on: #9a9a9a;
+
+  --tag-js: #f7df1e;
+  --tag-scss: #264de4;
+  --tag-php: #777bb4;
+  --tag-html: #e34c26;
+
+  --font-ui: "DM Mono", ui-monospace, monospace;
+  --font-term: "Courier Prime", "Courier New", Courier, monospace;
+
+  --radius-term: 8px;
+  --shadow-hero: 0 20px 40px rgba(0, 0, 0, .4);
+  --shadow-term: 0 10px 30px rgba(0, 0, 0, .3);
+
+  --nav-w: 200px;
+  /* Height of the top bar, so anchored sections clear it */
+  --bar-h: 60px;
+  --gutter: 16px;
+}
+
+@media (min-width: 768px) {
+  :root { --gutter: 40px; }
+}
+
+/* Sidebar mode needs the height as well as the width (it cut off its own links at 788x308) */
+@media (min-width: 768px) and (min-height: 560px) {
+  :root { --bar-h: 0px; }
+}

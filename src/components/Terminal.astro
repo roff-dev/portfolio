@@ -1,0 +1,64 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'div'> {
+  /** Text in the title bar, e.g. kieron@portfolio:~/code */
+  title: string;
+  /** The larger hero shadow */
+  raised?: boolean;
+}
+
+const { title, raised = false, class: className, ...attrs } = Astro.props;
+---
+<div class:list={['term', { 'term--raised': raised }, className]} {...attrs}>
+  <div class="term__bar">
+    <slot name="lights">
+      <span class="term__lights" aria-hidden="true">
+        <span class="term__light" style="--c: var(--light-red)"></span>
+        <span class="term__light" style="--c: var(--light-yellow)"></span>
+        <span class="term__light" style="--c: var(--light-green)"></span>
+      </span>
+    </slot>
+    <span class="term__title">{title}</span>
+  </div>
+  <slot />
+</div>
+
+<style is:global>
+  .term {
+    width: 100%;
+    background: var(--term-body);
+    color: var(--text);
+    border-radius: var(--radius-term);
+    box-shadow: var(--shadow-term);
+    overflow: hidden;
+    font-family: var(--font-term);
+  }
+  .term--raised { box-shadow: var(--shadow-hero); }
+  .term__bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 36px;
+    padding: 0 12px;
+    background: var(--term-header);
+    border-bottom: 1px solid var(--term-border);
+  }
+  .term__lights { display: flex; gap: 8px; }
+  .term__light { width: 12px; height: 12px; border: 0; padding: 0; border-radius: 50%; background: var(--c); }
+  /* The title stays centred on the window, not on the space beside the lights */
+  .term__title {
+    flex: 1;
+    min-width: 0;
+    margin-right: 56px;
+    text-align: center;
+    color: var(--text-2);
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .prompt { margin: 0 0 10px; overflow-wrap: anywhere; }
+  .prompt__user { color: var(--prompt-user); }
+  .prompt__path { color: var(--prompt-path); }
+</style>

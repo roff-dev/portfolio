@@ -1,0 +1,26 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <p>© {year} Kieron Oates</p>
+  <ul>
+    <li><a href="/privacy/">Privacy</a></li>
+    <li><a href="/terms/">Terms</a></li>
+  </ul>
+</footer>
+
+<style>
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 20px;
+    padding: 16px var(--gutter) max(16px, env(safe-area-inset-bottom));
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .footer p { margin: 0; }
+  .footer ul { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+  .footer a { display: inline-grid; place-items: center; min-height: 44px; padding: 0 8px; color: var(--text-2); }
+  .footer a:hover { color: var(--text-strong); }
+</style>
