@@ -1,0 +1,18 @@
+{
+  "name": "Dissertation",
+  "order": 6,
+  "status": "live",
+  "summary": "My final-year project: a contactless reward system that gives small shops what supermarket loyalty schemes do.",
+  "description": "Contactless Mobile Web Reward System to Enhance Customer Engagement, for my BSc (Hons) in Computing for Business. Big supermarkets keep customers coming back with reward schemes that small local shops can't build, so I designed and built one they could: NFC Savers, a mobile web app where customers' NFC cards carry their details to readers in the shop, with points, deals and shopping lists on their phone. It's backed by a MongoDB database with token-based logins, and it follows a literature review, an agile build and a customer survey. It was graded 72/100, a First.",
+  "year": 2024,
+  "links": {
+    "pdf": "/dissertation.pdf"
+  },
+  "image": {
+    "src": "../../assets/projects/dissertation.png",
+    "alt": "Three phone screens from NFC Savers: the welcome page, a points balance with deals and products, and a shopping list."
+  },
+  "stack": ["HTML, CSS and JavaScript", "MongoDB", "Entity relationships", "SQL", "Authentication tokens", "NFC"],
+  "tags": ["research"],
+  "sites": { "portfolio": true }
+}

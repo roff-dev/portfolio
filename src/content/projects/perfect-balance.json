@@ -1,0 +1,19 @@
+{
+  "name": "Perfect Balance",
+  "order": 5,
+  "status": "live",
+  "summary": "A daily 3D balance-scale game: stack everyday things until they match the weight on the other pan.",
+  "description": "You get something on one pan, say an elephant, and a shelf of everyday objects to stack on the other until you think the weights match. Then the scale lets go, and landing between 3% light and 4% heavy wins the round. There are five rounds a day, the same for everyone, and a Freeplay mode. Jolt physics, compiled to WebAssembly, runs in a web worker so the piles slide and topple without the page stuttering, and each of the 200 objects has its weight from two independent sources.",
+  "year": 2026,
+  "links": {
+    "live": "https://perfect-balance.kieronoates.workers.dev",
+    "repo": "https://github.com/roff-dev/perfect-balance"
+  },
+  "image": {
+    "src": "../../assets/projects/perfect-balance.png",
+    "alt": "A balance scale with a keg of beer on one pan and a stack of televisions on the other."
+  },
+  "stack": ["Svelte 5", "TypeScript", "three.js", "Jolt Physics (WebAssembly)", "Web Workers", "Cloudflare Workers"],
+  "tags": ["play", "3d"],
+  "sites": { "portfolio": true, "hub": true }
+}

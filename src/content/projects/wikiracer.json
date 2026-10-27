@@ -1,0 +1,19 @@
+{
+  "name": "Wikiracer",
+  "order": 3,
+  "status": "live",
+  "summary": "Race between Wikipedia articles using only their links, then watch the shortest route being found.",
+  "description": "Get from one Wikipedia article to another in as few clicks as you can. At the finish, a search spreads out from both articles at once, you watch the two fronts meet, and your route appears beside the shortest one. I turned Wikipedia's 11 GB of SQL dumps into a map of 7 million articles and 713 million links that the browser can search by reading about a megabyte of it, with no search server. There's a daily course, random courses at three difficulties and live rooms for racing friends.",
+  "year": 2026,
+  "links": {
+    "live": "https://wikiracer.kieronoates.workers.dev",
+    "repo": "https://github.com/roff-dev/wikiracer"
+  },
+  "image": {
+    "src": "../../assets/projects/wikiracer.png",
+    "alt": "A finished Wikiracer race: two search fronts meeting in the middle, with my route shown against the shortest one."
+  },
+  "stack": ["Svelte 5", "TypeScript", "WebGL2", "Web Workers", "Cloudflare Workers and Durable Objects", "GitHub Actions"],
+  "tags": ["play", "data"],
+  "sites": { "portfolio": true, "hub": true }
+}

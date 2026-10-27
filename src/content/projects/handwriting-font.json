@@ -1,0 +1,19 @@
+{
+  "name": "Handwriting Font Maker",
+  "order": 2,
+  "status": "live",
+  "summary": "Turn your handwriting into a real font that installs on a phone or computer, all in the browser.",
+  "description": "You write each letter on your phone, with a mouse, or on a printed template you photograph, and download a font that installs on an iPhone, Mac or PC. It spaces and kerns your letters, lets you draw busy letters up to three times so repeats take turns, and joins pairs like th the way you write them. I wrote most of the font file myself, from the TrueType outlines to the layout tables. There's no account and no server, and nothing you draw leaves your device.",
+  "year": 2026,
+  "links": {
+    "live": "https://handwriting-font.pages.dev",
+    "repo": "https://github.com/roff-dev/handwriting-font"
+  },
+  "image": {
+    "src": "../../assets/projects/handwriting-font.jpg",
+    "alt": "The studio with every character drawn, showing a specimen poster for the finished handwriting font."
+  },
+  "stack": ["React 19", "TypeScript", "Vite", "Web Workers", "Hand-written OpenType tables", "Cloudflare Pages"],
+  "tags": ["create", "tools"],
+  "sites": { "portfolio": true, "hub": true }
+}

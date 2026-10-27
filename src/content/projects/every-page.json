@@ -1,0 +1,19 @@
+{
+  "name": "Every Page",
+  "order": 4,
+  "status": "live",
+  "summary": "A walkable Library of Babel: every possible page is on a shelf somewhere, and typing takes you to yours.",
+  "description": "A lamplit version of Borges's library, holding every page of 3,200 characters that could ever be written. Type anything and you fly down the air shaft, follow a trail of light to one book, and it opens on the page where your words have always been. The library stores nothing: each page is computed on your device from its place on the shelf, and search runs that shuffle backwards. The whole 3D scene is about 154 KB gzipped and stays smooth on a phone.",
+  "year": 2026,
+  "links": {
+    "live": "https://every-page.kieronoates.workers.dev",
+    "repo": "https://github.com/roff-dev/every-page"
+  },
+  "image": {
+    "src": "../../assets/projects/every-page.png",
+    "alt": "Every Page: an open book asking what the library should find, over a lamplit gallery of hexagonal bookshelves."
+  },
+  "stack": ["Astro", "TypeScript", "three.js and GLSL", "Web Workers", "BigInt", "Web Audio", "Cloudflare Workers"],
+  "tags": ["3d", "explore"],
+  "sites": { "portfolio": true, "hub": true }
+}

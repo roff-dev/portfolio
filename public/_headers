@@ -11,3 +11,12 @@
 
 /logo.png
   Cache-Control: public, max-age=86400
+
+# shared project data, read by my other sites
+/projects.json
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+
+/dissertation.pdf
+  Cache-Control: public, max-age=86400
+  Content-Disposition: attachment; filename="Kieron-Oates-dissertation.pdf"

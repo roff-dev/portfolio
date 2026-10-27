@@ -1,0 +1,19 @@
+{
+  "name": "Overhead",
+  "order": 1,
+  "status": "live",
+  "summary": "A live 3D globe of everything tracked in orbit, each object where it really is right now.",
+  "description": "Overhead shows around 32,000 satellites, rocket bodies and pieces of debris moving where they really are. You can scrub a week either way, pick out groups like Starlink or the space stations, ride along with the ISS and see what passes over you tonight. I built it because the trackers I used were either beautiful or useful, rarely both, and few worked on a phone. A Cloudflare Worker collects fresh orbits every two hours; everything else runs on your device, with SGP4 in a web worker and the GPU moving every object each frame.",
+  "year": 2026,
+  "links": {
+    "live": "https://overhead.kieronoates.workers.dev",
+    "repo": "https://github.com/roff-dev/satellite-tracker"
+  },
+  "image": {
+    "src": "../../assets/projects/overhead.png",
+    "alt": "Overhead: a faceted globe ringed by thousands of satellites, with live counts of working satellites, rocket bodies and debris, and a timeline."
+  },
+  "stack": ["Svelte 5", "TypeScript", "Three.js and GLSL", "satellite.js (SGP4, WebAssembly)", "Web Workers", "Cloudflare Workers and KV"],
+  "tags": ["3d", "data", "explore"],
+  "sites": { "portfolio": true, "hub": true }
+}
