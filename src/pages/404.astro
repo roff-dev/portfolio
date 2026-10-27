@@ -1,0 +1,90 @@
+---
+import Base from '../layouts/Base.astro';
+import Terminal from '../components/Terminal.astro';
+
+const commands = [
+  { cmd: 'cd ~', href: '/', label: 'the home page' },
+  { cmd: 'ls projects', href: '/#projects', label: 'my projects' },
+  { cmd: 'cat about', href: '/about/', label: 'about me' },
+];
+---
+<Base title="Page not found" description="That page doesn't exist. Go to the home page, my projects or the about page instead." noindex>
+  <section class="nf" aria-labelledby="nf-title">
+    <Terminal title="kieron@portfolio:~" raised>
+      <div class="nf__body">
+        <p class="prompt"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~</span>$ cd <span data-path>that-page</span></p>
+        <p class="nf__err">bash: cd: <span data-path>that-page</span>: No such file or directory</p>
+        <h1 id="nf-title">That page doesn't exist.</h1>
+        <p class="nf__try">Try one of these instead.</p>
+        <ul class="nf__cmds">
+          {commands.map(({ cmd, href, label }) => (
+            <li>
+              <a class="nf__cmd" href={href}>
+                <span class="nf__run" aria-hidden="true">{cmd}</span>
+                <span class="nf__note"><span aria-hidden="true"># </span>{label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="prompt nf__idle" aria-hidden="true"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~</span>$ <span class="nf__caret"></span></p>
+      </div>
+    </Terminal>
+  </section>
+</Base>
+
+<script>
+  // The same page answers every missing address, so show the one that was asked for
+  let path = location.pathname.replace(/^\/+|\/+$/g, '');
+  try { path = decodeURIComponent(path); } catch { /* keep it encoded */ }
+  if (path.length > 60) path = `${path.slice(0, 59)}…`;
+  if (path) document.querySelectorAll('[data-path]').forEach((el) => { el.textContent = path; });
+</script>
+
+<style>
+  /* Centre the window in the space between the nav and the footer */
+  :global(main:has(> .nf)) { display: flex; flex-direction: column; }
+  .nf {
+    display: grid;
+    place-items: center;
+    flex: 1;
+    padding: 24px var(--gutter) 48px;
+  }
+  .nf :global(.term) { max-width: 720px; }
+
+  .nf__body { padding: 20px clamp(16px, 4vw, 28px) 24px; font: 16px/1.5 var(--font-term); }
+  .nf__err { margin: 0 0 28px; color: var(--light-red); overflow-wrap: anywhere; }
+
+  h1 { margin: 0; color: var(--heading); font: 700 clamp(22px, 5vw, 28px)/1.25 var(--font-term); }
+  .nf__try { margin: 6px 0 16px; color: var(--text-2); }
+
+  .nf__cmds { display: grid; gap: 2px; margin: 0 0 20px; padding: 0; list-style: none; }
+  .nf__cmd {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 14px;
+    min-height: 44px;
+    padding: 10px 0;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nf__cmd::before { content: "$"; margin-right: -4px; color: var(--muted); }
+  .nf__run { border-bottom: 1px dashed var(--accent); }
+  .nf__note { color: var(--muted); }
+  .nf__cmd:hover .nf__run { color: var(--accent-hover); border-bottom-style: solid; }
+  .nf__cmd:hover .nf__note { color: var(--text-2); }
+
+  .nf__idle { margin: 0; }
+  .nf__caret {
+    display: inline-block;
+    width: .55em;
+    height: 1.05em;
+    vertical-align: -.2em;
+    background: var(--text);
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .nf__caret { animation: none; }
+  }
+</style>
