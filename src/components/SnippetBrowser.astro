@@ -1,0 +1,242 @@
+---
+import { render } from 'astro:content';
+import Terminal from './Terminal.astro';
+import { allSnippets } from '../lib/snippets';
+
+const snippets = await Promise.all(
+  (await allSnippets()).map(async (snippet) => ({ ...snippet, Content: (await render(snippet.entry)).Content })),
+);
+const count = snippets.length;
+
+// Folders for the tree and options for the project filter, in library order
+const groups = [...new Map(snippets.map((s) => [s.projectKey, { key: s.projectKey, name: s.projectName, items: snippets.filter((t) => t.projectKey === s.projectKey) }])).values()];
+const LANGS = { ts: 'TypeScript', js: 'JavaScript', glsl: 'GLSL', scss: 'SCSS' } as const;
+const langs = (Object.keys(LANGS) as (keyof typeof LANGS)[]).filter((lang) => snippets.some((s) => s.entry.data.language === lang));
+/** Each tag's text colour, whichever passes 4.5:1 on its background */
+const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
+---
+<Terminal class="lib" title="kieron@portfolio:~/code">
+  <search class="query" data-query hidden>
+    <label class="grep">
+      <span class="grep__prompt" aria-hidden="true">$ grep</span>
+      <input type="search" data-q placeholder="Search the code" aria-label="Search the code" maxlength="100" autocomplete="off" spellcheck="false" />
+    </label>
+    <div class="filters">
+      <div class="chips" role="group" aria-label="Language">
+        <button type="button" class="chip" data-lang="" aria-pressed="true">all</button>
+        {langs.map((lang) => <button type="button" class="chip" data-lang={lang} aria-pressed="false" aria-label={LANGS[lang]}>{lang}</button>)}
+      </div>
+      <label class="project">
+        <span>Project</span>
+        <select data-project>
+          <option value="">All projects</option>
+          {groups.map((g) => <option value={g.key}>{g.name}</option>)}
+        </select>
+      </label>
+    </div>
+    <p class="status" role="status" data-status>{count} of {count} snippets</p>
+  </search>
+
+  <div class="lib__body">
+    <nav class="tree" aria-label="Snippets by project">
+      <p class="tree__root">~/code</p>
+      <ul>
+        {groups.map((g) => (
+          <li data-folder>
+            <span class="tree__folder">{g.key}/</span>
+            <ul>
+              {g.items.map(({ entry }) => <li data-tree-item={entry.id}><a href={`#${entry.id}`}>{entry.data.title}</a></li>)}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="lib__main">
+      <p class="empty" data-empty hidden>
+        No snippets match <code data-empty-q></code>. <button type="button" data-clear>Clear the search</button>
+      </p>
+      <ul class="entries" data-list>
+        {snippets.map(({ entry, projectKey, projectName, projectHref, Content }) => (
+          <li data-item>
+            <details class="entry" id={entry.id} data-lang={entry.data.language} data-project={projectKey} open>
+              <summary>
+                <span class="entry__title" data-title>{entry.data.title}</span>
+                <span class="entry__meta">
+                  <span class="tag" style={`--tag: var(--tag-${entry.data.language}); --ink: ${INK[entry.data.language]}`}>{entry.data.language}</span>
+                  <span>{projectName}</span>
+                  <span class="entry__skill">{entry.data.skill}</span>
+                </span>
+              </summary>
+              <div class="entry__body">
+                {entry.data.file && (
+                  <p class="prompt">
+                    <span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~/{projectKey}</span>$ cat {entry.data.file}
+                  </p>
+                )}
+                <Content />
+                {projectHref && <a class="cmd" href={projectHref}><span>Open {projectName} in my projects</span></a>}
+              </div>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+  <p class="sr-only" aria-live="polite" data-announce></p>
+</Terminal>
+
+<script>
+  import { startSnippetBrowser } from '../scripts/snippet-filter';
+
+  startSnippetBrowser(document.querySelector<HTMLElement>('.lib')!);
+</script>
+
+<style>
+  /* clip rather than hidden, so the tree can stick while the page scrolls */
+  .lib { max-width: 1180px; overflow: clip; container-type: inline-size; }
+
+  .query { display: grid; gap: 12px; padding: 16px; border-bottom: 1px solid var(--term-border); }
+  .query[hidden] { display: none; }
+  .grep { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 1px solid var(--term-border); border-radius: 6px; background: var(--surface); }
+  .grep:focus-within { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
+  .grep__prompt { color: var(--prompt-user); white-space: nowrap; }
+  .grep input { flex: 1; min-width: 0; min-height: 42px; border: 0; background: none; color: var(--text); font: 16px var(--font-term); outline: none; }
+  .grep input::placeholder { color: var(--placeholder); }
+  .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { min-width: 44px; min-height: 44px; padding: 0 12px; border: 1px solid var(--term-border); border-radius: 6px; background: transparent; color: var(--text-2); font: 14px var(--font-term); cursor: pointer; }
+  .chip:hover { color: var(--text); background: var(--surface-raised); }
+  .chip[aria-pressed="true"] { background: var(--surface-raised); color: var(--text); border-color: var(--muted); }
+  .project { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 14px; }
+  .project select { min-height: 44px; padding: 0 10px; border: 1px solid var(--term-border); border-radius: 6px; background: var(--surface); color: var(--text); font: 14px var(--font-term); }
+  .status { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .lib__body { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .lib__main { min-width: 0; padding: 8px 0 16px; }
+
+  /* The tree: folders are projects, files are snippets. Only where there's room beside the list */
+  .tree { display: none; }
+  @container (min-width: 900px) {
+    .lib__body { grid-template-columns: 270px minmax(0, 1fr); }
+    .tree {
+      display: block;
+      position: sticky;
+      top: calc(var(--bar-h) + 16px);
+      align-self: start;
+      max-height: calc(100svh - var(--bar-h) - 32px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      padding: 16px 12px 16px 16px;
+      border-right: 1px solid var(--term-border);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+  }
+  .tree ul { margin: 0; padding: 0; list-style: none; }
+  .tree ul ul { margin: 2px 0 10px 8px; padding-left: 10px; border-left: 1px dashed var(--term-border); }
+  .tree [hidden] { display: none; }
+  .tree__root { margin: 0 0 8px; color: var(--prompt-path); }
+  .tree__folder { color: var(--heading); }
+  .tree a { display: block; padding: 5px 4px; color: var(--text-2); text-decoration: none; border-radius: 4px; }
+  .tree a:hover { color: var(--text); background: var(--surface-raised); }
+
+  .entries { margin: 0; padding: 0; list-style: none; }
+  .entries > li[hidden] { display: none; }
+  .entry { border-bottom: 1px solid var(--term-border); }
+  .entry > summary {
+    display: grid;
+    gap: 6px;
+    padding: 14px 16px 14px 40px;
+    position: relative;
+    cursor: pointer;
+    list-style: none;
+  }
+  .entry > summary::-webkit-details-marker { display: none; }
+  .entry > summary::before { content: ">"; position: absolute; left: 16px; top: 14px; color: var(--prompt-user); transition: rotate .2s ease; }
+  .entry[open] > summary::before { rotate: 90deg; }
+  .entry > summary:hover .entry__title { color: var(--accent-hover); }
+  .entry > summary:focus-visible { outline-offset: -3px; }
+  .entry__title { color: var(--text); font-size: 16px; line-height: 1.4; }
+  .entry__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; color: var(--text-2); font-size: 13px; }
+  .entry__skill { color: var(--muted); }
+  .tag { padding: 1px 7px; border-radius: 4px; background: var(--tag); color: var(--ink); font: 700 12px/1.5 var(--font-term); }
+
+  .entry__body { padding: 0 16px 20px 40px; font-size: 15px; line-height: 1.65; }
+  .entry__body > :global(p) { max-width: 72ch; margin: 0 0 12px; }
+  .entry__body :global(strong) { color: var(--heading); font-weight: 700; }
+  .entry__body .prompt { font-size: 14px; }
+  .entry__body :global(code:not(pre code)) { color: var(--text); background: var(--surface-raised); padding: 0 4px; border-radius: 3px; }
+
+  /* Code blocks: line numbers from a counter, so copying takes only the code */
+  .entry__body :global(.code) { position: relative; margin: 0 0 18px; }
+  .entry__body :global(pre) {
+    margin: 0 0 18px;
+    padding: 14px 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--term-border) transparent;
+    border: 1px solid var(--term-border);
+    border-radius: 6px;
+    font: 14px/1.6 var(--font-term);
+    tab-size: 2;
+  }
+  .entry__body :global(.code pre) { margin: 0; }
+  .entry__body :global(pre code) { display: block; width: max-content; min-width: 100%; counter-reset: line; }
+  .entry__body :global(pre .line) { display: inline-block; padding-right: 16px; }
+  .entry__body :global(pre .line)::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 3ch;
+    margin-right: 14px;
+    padding-left: 12px;
+    box-sizing: content-box;
+    text-align: right;
+    color: var(--muted);
+    user-select: none;
+  }
+  .entry__body :global(.code__copy) {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--term-border);
+    border-radius: 6px;
+    background: var(--term-header);
+    color: var(--text);
+    font: 13px var(--font-term);
+    cursor: pointer;
+  }
+  .entry__body :global(.code__copy:hover) { background: var(--surface-raised); }
+
+  .cmd { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--text); font-size: 15px; text-decoration: none; }
+  .cmd::before { content: "$"; color: var(--muted); }
+  .cmd span { border-bottom: 1px dashed var(--accent); }
+  .cmd:hover span { color: var(--accent-hover); border-bottom-style: solid; }
+
+  .empty { margin: 16px; color: var(--text-2); }
+  .empty[hidden] { display: none; }
+  .empty code { color: var(--text); }
+  .empty button { min-height: 44px; padding: 0 6px; border: 0; background: none; color: var(--accent); font: inherit; text-decoration: underline dashed; cursor: pointer; }
+  .empty button:hover { color: var(--accent-hover); }
+
+  /* Opening and closing slide where the browser can animate to the content's own height */
+  @supports (interpolate-size: allow-keywords) {
+    .entry { interpolate-size: allow-keywords; }
+    .entry::details-content { block-size: 0; overflow: clip; transition: block-size .3s ease, content-visibility .3s allow-discrete; }
+    .entry[open]::details-content { block-size: auto; }
+  }
+
+  @container (max-width: 480px) {
+    .entry > summary { padding-left: 34px; }
+    .entry > summary::before { left: 12px; }
+    .entry__body { padding: 0 12px 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .entry::details-content, .entry > summary::before { transition: none; }
+  }
+</style>

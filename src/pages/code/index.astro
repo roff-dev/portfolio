@@ -1,6 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
+import SnippetBrowser from '../../components/SnippetBrowser.astro';
 ---
-<Base title="Code" description="A searchable library of code from my projects.">
-  <h1 style="padding: 24px var(--gutter)">Code</h1>
+<Base title="Code" description="Code from my projects, each piece explained: the problem it solves, why I wrote it that way and the detail worth noticing. Search it by language, project or anything in the code.">
+  <section class="code-page" aria-labelledby="code-title">
+    <h1 id="code-title" class="sr-only">Code from my projects</h1>
+    <SnippetBrowser />
+  </section>
 </Base>
+
+<style>
+  .code-page { padding: 24px var(--gutter) 48px; }
+</style>

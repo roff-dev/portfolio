@@ -1,4 +1,4 @@
-import { defineCollection } from 'astro:content';
+import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
@@ -61,4 +61,25 @@ const journey = defineCollection({
   }),
 });
 
-export const collections = { projects, journey };
+// The code library: one Markdown file per snippet. The body is the code fence, then three
+// paragraphs: the problem, why this approach, what to notice.
+const snippets = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/snippets' }),
+  schema: z
+    .object({
+      title: z.string(),
+      /** The project it comes from, if that project is in the projects collection */
+      project: reference('projects').optional(),
+      /** Otherwise the older work it comes from, by name */
+      from: z.string().optional(),
+      language: z.enum(['ts', 'js', 'glsl', 'scss']),
+      skill: z.string(),
+      /** Where it lives in the project's repo */
+      file: z.string().optional(),
+      /** Position within its project; lower comes first */
+      order: z.number().int(),
+    })
+    .refine((data) => Boolean(data.project) !== Boolean(data.from), { message: 'Give exactly one of project or from' }),
+});
+
+export const collections = { projects, journey, snippets };

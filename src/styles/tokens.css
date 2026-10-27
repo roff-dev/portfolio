@@ -33,6 +33,9 @@
   --tag-scss: #264de4;
   --tag-php: #777bb4;
   --tag-html: #e34c26;
+  /* Added for the code library, on the same rule as the old tags (each language's own colour) */
+  --tag-ts: #3178c6;
+  --tag-glsl: #5586a4;
 
   --font-ui: "DM Mono", ui-monospace, monospace;
   --font-term: "Courier Prime", "Courier New", Courier, monospace;
