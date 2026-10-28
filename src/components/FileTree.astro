@@ -56,7 +56,7 @@ const { dir } = Astro.props;
   .file::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 2px; background: var(--tag); }
   .file:hover { color: var(--text); background: var(--surface-raised); }
   .file:focus-visible { outline-offset: -2px; }
-  .file[aria-current="true"] { color: var(--text-strong); background: var(--surface-raised); box-shadow: inset 2px 0 var(--prompt-user); }
+  .file[aria-current="true"] { color: var(--text-strong); background: var(--surface-raised); }
 
   @media (prefers-reduced-motion: reduce) {
     .dir > summary::before { transition: none; }
