@@ -21,11 +21,14 @@ const hasBody = Boolean(stop.body?.trim());
   <p class="log">commit · <b>{data.message}</b></p>
   <h2 class="stop__title" id={`h-${id}`}>{data.heading}</h2>
   {data.intro && <p class="stop__intro">{data.intro}</p>}
+  <!-- Each line reads as one sentence, label then value; a line with a link ends in a command, as links do across the site -->
   <dl class="lines">
     {data.lines.map((line) => (
-      <div>
+      <div class:list={{ lines__cmd: line.link }}>
         <dt>{line.label}</dt>
-        {line.games ? (
+        {line.link ? (
+          <dd><a class="cmd" href={line.link.href}><span>{line.text} {line.link.text}</span></a></dd>
+        ) : line.games ? (
           <dd class="game">
             <span class="game__name" data-game-name>{line.text}</span>
             <button type="button" class="game__btn" aria-label="Pick another favourite game" data-games={JSON.stringify(line.games)}>
@@ -33,7 +36,7 @@ const hasBody = Boolean(stop.body?.trim());
             </button>
           </dd>
         ) : (
-          <dd>{line.text}{line.link && [' ', <a href={line.link.href}>{line.link.text}</a>]}</dd>
+          <dd>{line.text}</dd>
         )}
       </div>
     ))}
@@ -59,16 +62,25 @@ const hasBody = Boolean(stop.body?.trim());
 
   /* The same size and colour as a project's name in the projects window */
   .stop__title { margin: 0 0 12px; color: var(--heading); font-size: 30px; font-weight: 400; line-height: 1.2; overflow-wrap: break-word; }
-  .stop__intro { max-width: 62ch; margin: 0 0 20px; color: var(--text-2); font-size: 16px; line-height: 1.6; }
+  /* Body text as a project's description has it */
+  .stop__intro { max-width: 62ch; margin: 0 0 18px; font-size: 16px; line-height: 1.65; }
 
-  .lines { display: grid; gap: 14px; margin: 0; }
-  .lines div { display: grid; gap: 2px; }
-  .lines dt { color: var(--text-2); font-size: 16px; }
-  .lines dd { margin: 0; color: var(--text-strong); font-size: 16px; font-weight: 700; line-height: 1.5; overflow-wrap: break-word; }
-  .lines a { color: var(--accent); }
-  .lines a:hover { color: var(--accent-hover); }
+  .lines { display: grid; gap: 4px; max-width: 62ch; margin: 0; font-size: 16px; line-height: 1.65; overflow-wrap: break-word; }
+  .lines dt,
+  .lines dd { display: inline; margin: 0; }
+  .lines dt { margin-right: 1ch; color: var(--text-2); }
+  .lines dd { color: var(--text); }
+  .lines__cmd { margin-top: 10px; }
+  .lines__cmd dt,
+  .lines__cmd dd { display: block; }
 
-  .game { display: flex; align-items: center; gap: 10px; }
+  /* A command, as the projects window and the code library write their links */
+  .cmd { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--text); text-decoration: none; }
+  .cmd::before { content: var(--prompt-mark); color: var(--muted); }
+  .cmd span { border-bottom: 1px dashed var(--accent); }
+  .cmd:hover span { color: var(--accent-hover); border-bottom-style: solid; }
+
+  .lines .game { display: inline-flex; align-items: center; gap: 10px; vertical-align: middle; }
   .game__btn {
     flex: 0 0 auto;
     display: grid;
@@ -97,12 +109,22 @@ const hasBody = Boolean(stop.body?.trim());
   .notes:focus-visible { outline-offset: 2px; }
   .notes :global(.prompt) { font-size: 14px; }
   .notes :global(p) { max-width: 62ch; margin: 0 0 12px; }
-  .notes :global(h3) { margin: 18px 0 8px; color: var(--heading); font-size: 16px; font-weight: 700; }
-  .notes :global(h3)::before { content: "# "; }
+  /* The file's subheadings and lists as the projects window's "Built with" and its stack */
+  .notes :global(h3) { margin: 18px 0 6px; color: var(--muted); font-size: 14px; font-weight: 400; }
   .notes :global(ul) { margin: 0 0 12px; padding: 0; list-style: none; color: var(--text-2); }
-  .notes :global(li)::before { content: "● "; color: var(--prompt-user); }
+  .notes :global(li)::before { content: "+ "; color: var(--prompt-user); }
   .notes :global(p:last-child) { margin-bottom: 0; }
-  .notes :global(a) { display: inline-flex; align-items: center; min-height: 44px; }
+  /* A link on its own line is a command; inline-block keeps the underline off the mark */
+  .notes :global(p > a:only-child) {
+    display: inline-block;
+    padding-block: 10px;
+    color: var(--text);
+    text-decoration: underline dashed var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+  .notes :global(p > a:only-child)::before { content: var(--prompt-mark); display: inline-block; margin-right: 10px; color: var(--muted); }
+  .notes :global(p > a:only-child:hover) { color: var(--accent-hover); text-decoration-style: solid; }
   /* A wide window has room beside the step list, so the file keeps to a box rather than making every step tall */
   @container (min-width: 700px) {
     .notes { max-height: 15.5em; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--term-border) transparent; }
