@@ -162,7 +162,59 @@ export function startSnippetBrowser(root: HTMLElement) {
       if (at.top < box.top || at.bottom > box.bottom) tree.scrollTop += at.top - box.top - box.height / 3;
     }
   }
-  for (const entry of entries) entry.addEventListener('toggle', () => entry.open && markCurrent(entry.id));
+
+  // Opening a snippet scrolls it to the top of the list, making room for its code; closing it scrolls back, so the
+  // snippet returns to where it was on screen. Its place is kept relative to the screen rather than as a scroll
+  // position, so it still lands right if other snippets have opened or closed above it meanwhile.
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const placeBeforeOpening = new Map<HTMLElement, number>();
+  /** The list when it scrolls inside the window, otherwise the page */
+  const scroller = () => (main.scrollHeight > main.clientHeight ? main : null);
+  /** How far an entry is below the top of whatever scrolls; the page keeps a little room above it */
+  const offsetOf = (entry: HTMLElement) => {
+    const box = scroller();
+    return entry.getBoundingClientRect().top - (box ? box.getBoundingClientRect().top : 8);
+  };
+  /**
+   * Glides an entry to `target` px below the top. Each frame corrects towards where it should be by then, rather
+   * than aiming once: the code is still sliding open or shut meanwhile, so near the end of the list the room to
+   * scroll only appears as it opens, and the browser's scroll anchoring nudges the page as it shuts.
+   */
+  let glide = 0;
+  function glideTo(entry: HTMLElement, target: number) {
+    const from = offsetOf(entry);
+    const start = performance.now();
+    const duration = reduceMotion.matches ? 0 : 350;
+    const id = ++glide;
+    const step = (now: number) => {
+      if (id !== glide) return;
+      const t = duration ? Math.min(1, (now - start) / duration) : 1;
+      const want = from + (target - from) * (1 - (1 - t) ** 3);
+      (scroller() ?? window).scrollBy({ top: offsetOf(entry) - want, behavior: 'instant' });
+      // A frame past the end too, in case the code was still settling
+      if (t < 1 || now - start < duration + 100) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  // Scrolling by hand takes over from a glide
+  const stopGlide = () => glide++;
+  for (const type of ['wheel', 'touchstart'] as const) addEventListener(type, stopGlide, { passive: true });
+
+  for (const entry of entries) {
+    entry.addEventListener('toggle', () => {
+      if (entry.open) {
+        markCurrent(entry.id);
+        placeBeforeOpening.set(entry, offsetOf(entry));
+        glideTo(entry, 0);
+        return;
+      }
+      // Folding everything on load, and closing a snippet that wasn't opened here, leave the list where it is
+      const place = placeBeforeOpening.get(entry);
+      if (place === undefined) return;
+      placeBeforeOpening.delete(entry);
+      glideTo(entry, place);
+    });
+  }
   // Choosing the file that's already in the address doesn't change it, so open it here
   tree.addEventListener('click', (event) => {
     const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
