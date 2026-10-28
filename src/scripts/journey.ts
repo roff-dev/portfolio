@@ -37,7 +37,7 @@ export function startWizard(wizard: HTMLElement) {
       else link.removeAttribute('aria-current');
       link.toggleAttribute('data-done', j < i);
     });
-    pane.scrollTop = 0;
+    steps[i]!.scrollTop = 0;
 
     // The new step slides in from the side it's coming from, and the old one leaves by the other
     sliding.forEach((animation) => animation.cancel());

@@ -106,18 +106,27 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
   .wiz__steps a[data-done] .wiz__dot { border-color: var(--muted); background: var(--muted); }
 
   .wiz__pane {
+    --pad: 20px 16px 24px;
     min-width: 0;
     min-height: 0;
-    padding: 20px 16px 24px;
+    padding: var(--pad);
     overflow: hidden auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--term-border) transparent;
   }
 
   /* Without JavaScript every step shows, one after another */
   .wiz:not([data-ready]) .wiz__stage > :global(* + *) { margin-top: 32px; padding-top: 32px; border-top: 1px dashed var(--term-border); }
-  .wiz[data-ready] .wiz__stage { display: grid; }
-  .wiz[data-ready] .wiz__stage > :global(*) { grid-area: 1 / 1; }
+  /* With it, every step sits in one grid cell, so the window takes the tallest one's height. Where the screen cuts
+     the window short, each step scrolls on its own, so a short step never scrolls through the tallest one's room */
+  .wiz[data-ready] .wiz__pane { display: grid; grid-template-rows: minmax(0, 1fr); padding: 0; overflow: hidden; }
+  .wiz[data-ready] .wiz__stage { display: grid; grid-template-rows: minmax(0, 1fr); min-height: 0; }
+  .wiz[data-ready] .wiz__stage > :global(*) {
+    grid-area: 1 / 1;
+    min-height: 0;
+    padding: var(--pad);
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--term-border) transparent;
+  }
   .wiz[data-ready] .wiz__stage > :global([inert]) { visibility: hidden; }
 
   .wiz__foot {
@@ -157,7 +166,7 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
     .wiz__steps a { justify-content: flex-start; padding: 0 12px; }
     .wiz__name { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
     /* macOS: the step sits in an inset pane beside the list, with the buttons under it */
-    .wiz__pane { margin: 16px 16px 0 0; padding: 28px 32px; border: 1px solid var(--term-border); border-radius: 8px; background: var(--surface); }
+    .wiz__pane { --pad: 28px 32px; margin: 16px 16px 0 0; border: 1px solid var(--term-border); border-radius: 8px; background: var(--surface); }
     .wiz__foot { padding: 14px 16px 17px; border-top: 0; }
   }
 
@@ -174,7 +183,7 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
   :global([data-theme="windows"]) .wiz__btn { border-radius: 4px; }
   :global([data-theme="windows"]) .wiz__btn--go { color: #fff; }
   @container (min-width: 700px) {
-    :global([data-theme="windows"]) .wiz__pane { padding: 32px 36px; }
+    :global([data-theme="windows"]) .wiz__pane { --pad: 32px 36px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
