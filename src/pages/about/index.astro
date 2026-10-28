@@ -55,7 +55,7 @@ const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.d
   /* Drawn in full until the script takes over, so the page reads the same without it */
   .branch__drawn { background: var(--node-on); transform-origin: top; transform: scaleY(var(--p, 1)); }
 
-  /* The jump map: fixed in the corner, or at the top of the page on short screens where it would cover the stops */
+  /* The jump map: fixed in the corner above the taskbar, or at the top of the page on short screens where it would cover the stops */
   /* In the flow on short screens, so it needs its own stop or the first stop would snap past it */
   .map { margin: 12px var(--gutter) 0; scroll-snap-align: start; }
   .map ol {
@@ -89,7 +89,7 @@ const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.d
       position: fixed;
       z-index: 10;
       right: max(12px, env(safe-area-inset-right));
-      bottom: max(12px, env(safe-area-inset-bottom));
+      bottom: calc(var(--taskbar-h) + 12px);
       margin: 0;
       scroll-snap-align: none;
     }

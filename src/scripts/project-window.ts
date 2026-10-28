@@ -32,6 +32,11 @@ export function startProjectWindow(section: HTMLElement) {
       panels[j].hidden = !on;
     });
     title.textContent = `kieron@portfolio:~/projects/${ids[i]}`;
+    // The taskbar's dock marks the open project, as a dock marks an open app
+    for (const app of document.querySelectorAll<HTMLElement>('[data-dock-app]')) {
+      if (app.dataset.dockApp === ids[i]) app.setAttribute('aria-current', 'true');
+      else app.removeAttribute('aria-current');
+    }
     panelsBox.scrollTop = 0;
     // Bring the tab into view along the strip only, never scrolling the page
     const tab = tabs[i];

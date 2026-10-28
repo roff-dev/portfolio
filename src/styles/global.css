@@ -3,7 +3,7 @@
 html {
   color-scheme: dark;
   background: var(--page);
-  scroll-padding-top: var(--bar-h);
+  scroll-padding-bottom: var(--taskbar-h);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -46,16 +46,14 @@ a:hover { color: var(--accent-hover); }
 }
 .skip:focus { translate: 0 0; }
 
-/* Content area: beside the sidebar when there is one */
+/* Content area: the whole screen, kept clear of the taskbar along the bottom */
 .content {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: calc(100vh - var(--bar-h));
-  min-height: calc(100svh - var(--bar-h));
-}
-@media (min-width: 768px) and (min-height: 560px) {
-  .content { margin-left: var(--nav-w); }
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-bottom: var(--taskbar-h);
 }
 
 @media (prefers-reduced-motion: reduce) {

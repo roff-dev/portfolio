@@ -116,9 +116,9 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
     .tree {
       display: block;
       position: sticky;
-      top: calc(var(--bar-h) + 16px);
+      top: 16px;
       align-self: start;
-      max-height: calc(100svh - var(--bar-h) - 32px);
+      max-height: calc(100svh - var(--taskbar-h) - 32px);
       overflow-y: auto;
       scrollbar-width: thin;
       padding: 16px 12px 16px 16px;
@@ -127,10 +127,10 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
       line-height: 1.4;
     }
   }
-  /* With the sidebar, the window fills the screen with the same margin above and below; the tree and the
-     list scroll inside it, fading out at the bottom while there's more below */
+  /* Where there's room, the window fills the screen above the taskbar, with the same margin above and below;
+     the tree and the list scroll inside it, fading out at the bottom while there's more below */
   @media (min-width: 768px) and (min-height: 560px) {
-    .lib { display: flex; flex-direction: column; height: calc(100svh - 48px); }
+    .lib { display: flex; flex-direction: column; height: calc(100svh - var(--taskbar-h) - 48px); }
     .query { flex-shrink: 0; }
     .lib__body { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); }
     /* Positioned, so the screen-reader labels inside (absolutely positioned) scroll with them rather than

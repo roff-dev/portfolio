@@ -1,0 +1,243 @@
+---
+import { site } from '../site';
+import { portfolioProjects } from '../lib/projects';
+
+const path = Astro.url.pathname;
+const links = [
+  { href: '/about/', label: 'About' },
+  { href: '/#projects', label: 'Projects' },
+  { href: '/code/', label: 'Code' },
+];
+
+// The dock: each project's own icon, opening its tab in the projects window or its site in a new tab
+const icons = import.meta.glob<{ default: ImageMetadata }>('../assets/projects/icons/*.svg', { eager: true });
+const dock = (await portfolioProjects()).map(({ id, data }) => {
+  const icon = icons[`../assets/projects/icons/${id}.svg`];
+  if (!icon) throw new Error(`No dock icon for ${id}: add src/assets/projects/icons/${id}.svg`);
+  return { id, name: data.name, icon: icon.default.src, external: data.links.live ?? data.links.pdf };
+});
+---
+<!-- A taskbar along the bottom: the logo as the start button, the pages and a dock of projects in the middle,
+     and the social links in the tray -->
+<header class="taskbar">
+  <a class="start" href="/" aria-current={path === '/' ? 'page' : undefined}>
+    <img src="/logo.png" alt="Kieron Oates, home" width="43" height="43" />
+  </a>
+
+  <div class="taskbar__middle">
+    <nav class="pages" aria-label="Main">
+      <ul>
+        {links.map(({ href, label }) => (
+          <li><a href={href} aria-current={path === href ? 'page' : undefined}>{label}</a></li>
+        ))}
+      </ul>
+    </nav>
+    <span class="taskbar__divider" aria-hidden="true"></span>
+    <nav class="dock" aria-label="Projects">
+      <ul>
+        {dock.map(({ id, name, icon, external }) => (
+          <li class="dock__item">
+            <a class="dock__app" href={`/#${id}`} data-dock-app={id}>
+              <img src={icon} alt="" width="36" height="36" />
+              <span class="dock__name">{name}</span>
+            </a>
+            {external && (
+              <a class="dock__out" href={external} target="_blank" rel="noopener" aria-label={`Open ${name} in a new tab`}>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3h7v7M13 3 4 12" /></svg>
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+
+  <ul class="tray">
+    <li>
+      <a href={site.social.linkedin} aria-label="LinkedIn" rel="me">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm7 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C21.6 8.65 22 11.3 22 14.7V21h-4v-5.6c0-1.34-.03-3.06-1.86-3.06-1.87 0-2.15 1.46-2.15 2.96V21h-4V9Z" /></svg>
+      </a>
+    </li>
+    <li>
+      <a href={site.social.github} aria-label="GitHub" rel="me">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z" /></svg>
+      </a>
+    </li>
+  </ul>
+</header>
+
+<script>
+  // Escape hides the dock's name labels (they show on hover and focus otherwise) until the pointer or focus moves on
+  const bar = document.querySelector<HTMLElement>('.taskbar')!;
+  addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && bar.matches(':hover, :focus-within')) bar.classList.add('is-quiet');
+  });
+  const wake = () => bar.classList.remove('is-quiet');
+  bar.addEventListener('pointerover', wake);
+  bar.addEventListener('focusin', wake);
+</script>
+
+<style>
+  .taskbar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 4px;
+    height: var(--taskbar-h);
+    padding: 0 max(6px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(6px, env(safe-area-inset-left));
+    border-top: 1px solid var(--term-border);
+    background: var(--surface);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, .25);
+  }
+  /* Frosted where the browser can, so the background's lines drift past faintly behind it */
+  @supports (backdrop-filter: blur(1px)) {
+    .taskbar { background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(14px); }
+  }
+  .taskbar ul { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; }
+
+  /* The start button: the logo, with the old hover */
+  .start { justify-self: start; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 8px; }
+  .start img { width: 36px; height: 36px; image-rendering: pixelated; transition: filter .6s ease, transform .6s ease; }
+  .start:hover { background: var(--surface-raised); }
+  .start:hover img { filter: drop-shadow(0 0 6px rgba(50, 50, 50, .6)); transform: scale(1.05) translateY(-2px); }
+
+  .taskbar__middle { display: flex; align-items: center; justify-content: center; gap: 12px; min-width: 0; }
+
+  /* The pages, by name: the old nav's hover, a line drawing in from each corner, and both lines for the page you're on */
+  .pages a {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 9px;
+    color: var(--text-strong);
+    font-weight: 500;
+    letter-spacing: -1px;
+    text-decoration: none;
+  }
+  .pages a::before,
+  .pages a::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: var(--muted);
+    transition: width .3s ease;
+  }
+  .pages a::before { top: 4px; left: 0; }
+  .pages a::after { bottom: 4px; right: 0; }
+  @media (hover: hover) {
+    .pages a:hover::before,
+    .pages a:hover::after { width: 100%; }
+  }
+  .pages a[aria-current="page"]::before,
+  .pages a[aria-current="page"]::after { width: 100%; background: var(--text-2); }
+
+  .taskbar__divider { width: 1px; height: 28px; background: var(--term-border); }
+
+  /* The dock. Under the pointer an icon grows and its neighbours grow a little, rising out of the bar */
+  .dock ul { gap: 12px; }
+  .dock__item { position: relative; }
+  .dock__app { position: relative; display: block; border-radius: 9px; }
+  .dock__app img {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    transform-origin: 50% 100%;
+    transition: scale .2s ease, translate .2s ease;
+  }
+  .dock__app:focus-visible { outline-offset: 3px; }
+  @media (hover: hover) {
+    .dock__item:hover .dock__app img { scale: 1.4; translate: 0 -6px; }
+    .dock__item:hover + .dock__item .dock__app img,
+    .dock__item:has(+ .dock__item:hover) .dock__app img { scale: 1.18; translate: 0 -3px; }
+  }
+  /* A dot under the project that's open in the projects window */
+  .dock__app[aria-current="true"]::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -7px;
+    width: 4px;
+    height: 4px;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: var(--text-2);
+  }
+
+  /* The project's name above its icon, on hover or keyboard focus */
+  .dock__name {
+    position: absolute;
+    bottom: calc(100% + 26px);
+    left: 50%;
+    translate: -50% 4px;
+    padding: 4px 9px;
+    border: 1px solid var(--term-border);
+    border-radius: 6px;
+    background: var(--term-header);
+    color: var(--text);
+    font: 13px/1.3 var(--font-term);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease, translate .15s ease;
+  }
+  .dock__item:hover .dock__name,
+  .dock__app:focus-visible .dock__name { opacity: 1; translate: -50% 0; }
+  .taskbar.is-quiet .dock__name { opacity: 0; }
+
+  /* Open the site itself in a new tab: a badge on the icon's corner, following it as it grows */
+  .dock__out {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--term-border);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text);
+    opacity: 0;
+    transition: opacity .15s ease, translate .2s ease;
+  }
+  .dock__out svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .dock__item:hover .dock__out,
+  .dock__out:focus-visible { opacity: 1; }
+  @media (hover: hover) {
+    .dock__item:hover .dock__out { translate: 7px -20px; }
+  }
+  .dock__out:hover { background: var(--surface-raised); color: var(--text-strong); }
+
+  /* The tray */
+  .taskbar .tray { justify-self: end; }
+  .tray a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 8px; color: var(--text-strong); }
+  .tray svg { width: 20px; height: 20px; fill: currentColor; }
+  @media (hover: hover) {
+    .tray a:hover { background: var(--surface-raised); }
+    .tray a[aria-label="LinkedIn"]:hover { color: #0077b5; }
+    .tray a[aria-label="GitHub"]:hover { color: var(--text-2); }
+  }
+
+  /* Phones: the pages and the tray only. The projects window's tabs list the projects. */
+  @media (max-width: 767px) {
+    .taskbar__divider, .dock { display: none; }
+  }
+  @media (max-width: 380px) {
+    .taskbar { gap: 0; }
+    .start { width: 44px; }
+    .pages a { padding: 0 6px; font-size: 15px; }
+    .tray a { width: 40px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dock__item:hover .dock__app img,
+    .dock__item:hover + .dock__item .dock__app img,
+    .dock__item:has(+ .dock__item:hover) .dock__app img { scale: 1; translate: 0; }
+    .dock__item:hover .dock__out { translate: 0; }
+  }
+</style>

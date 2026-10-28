@@ -7,7 +7,7 @@ import '../styles/tokens.css';
 import '../styles/global.css';
 import dmMono400 from '@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2?url';
 import Background from '../components/Background.astro';
-import Nav from '../components/Nav.astro';
+import Taskbar from '../components/Taskbar.astro';
 import Footer from '../components/Footer.astro';
 import PageSnap from '../components/PageSnap.astro';
 import { site } from '../site';
@@ -55,7 +55,7 @@ const ogImage = new URL('/og.png', Astro.site);
   <body>
     <a class="skip" href="#content">Skip to content</a>
     <Background />
-    <Nav />
+    <Taskbar />
     <div class="content">
       <main id="content" tabindex="-1">
         <slot />

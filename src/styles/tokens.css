@@ -44,17 +44,12 @@
   --shadow-hero: 0 20px 40px rgba(0, 0, 0, .4);
   --shadow-term: 0 10px 30px rgba(0, 0, 0, .3);
 
-  --nav-w: 200px;
-  /* Height of the top bar, so anchored sections clear it */
-  --bar-h: 60px;
+  /* The taskbar along the bottom of every screen, over the home indicator on phones that have one.
+     Screen-sized sections are the screen less this, so they end where the taskbar starts. */
+  --taskbar-h: calc(56px + env(safe-area-inset-bottom, 0px));
   --gutter: 16px;
 }
 
 @media (min-width: 768px) {
   :root { --gutter: 40px; }
-}
-
-/* Sidebar mode needs the height as well as the width (it cut off its own links at 788x308) */
-@media (min-width: 768px) and (min-height: 560px) {
-  :root { --bar-h: 0px; }
 }

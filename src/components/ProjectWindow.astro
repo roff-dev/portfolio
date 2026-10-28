@@ -74,8 +74,8 @@ function fileSize(publicPath: string) {
     grid-template-columns: minmax(0, 1fr);
     align-content: center;
     justify-items: center;
-    min-height: 100vh;
-    min-height: calc(100svh - var(--bar-h));
+    min-height: calc(100vh - var(--taskbar-h));
+    min-height: calc(100svh - var(--taskbar-h));
     padding: 24px var(--gutter);
   }
 
@@ -87,7 +87,7 @@ function fileSize(publicPath: string) {
   }
   /* Room to fit the window to the screen: the panel scrolls inside it instead */
   @media (min-width: 768px) and (min-height: 600px) {
-    .win[data-ready] { max-height: calc(100svh - var(--bar-h) - 48px); }
+    .win[data-ready] { max-height: calc(100svh - var(--taskbar-h) - 48px); }
   }
 
   .win__body { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; }

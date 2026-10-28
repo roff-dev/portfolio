@@ -24,24 +24,30 @@ export function startPageSnap() {
   let pending = 0;
   let move = 0;
 
+  /** The part of the window the page shows through: the scroll padding keeps out anything fixed over it, like the taskbar */
+  function view() {
+    const style = getComputedStyle(root);
+    return { top: parseFloat(style.scrollPaddingTop) || 0, bottom: innerHeight - (parseFloat(style.scrollPaddingBottom) || 0) };
+  }
+
   // Snap positions in page coordinates: the top of every section, the bottom edge of any section taller
   // than the screen (so paging up lands at its end and scrolls back through it), and the footer
   function stops() {
-    const pad = parseFloat(getComputedStyle(root).scrollPaddingTop) || 0;
+    const shown = view();
     const max = root.scrollHeight - innerHeight;
     const ys = [max];
     for (const s of document.querySelectorAll<HTMLElement>('.snap-page')) {
       const { top, bottom } = s.getBoundingClientRect();
-      ys.push(Math.round(top + scrollY - pad));
-      if (bottom - top > innerHeight - pad + 1) ys.push(Math.round(bottom + scrollY - innerHeight));
+      ys.push(Math.round(top + scrollY - shown.top));
+      if (bottom - top > shown.bottom - shown.top + 1) ys.push(Math.round(bottom + scrollY - shown.bottom));
     }
-    return { pad, max, tops: [...new Set(ys.map((y) => Math.min(max, y)))].sort((a, b) => a - b) };
+    return { shown, max, tops: [...new Set(ys.map((y) => Math.min(max, y)))].sort((a, b) => a - b) };
   }
 
   // A section taller than the screen scrolls through first: it only pages once its far edge is in view
-  function insideTallSection(dy: number, pad: number) {
-    const viewTop = pad;
-    const viewBottom = innerHeight;
+  function insideTallSection(dy: number, shown: { top: number; bottom: number }) {
+    const viewTop = shown.top;
+    const viewBottom = shown.bottom;
     return [...document.querySelectorAll<HTMLElement>('.snap-page')].some((s) => {
       const { top, bottom } = s.getBoundingClientRect();
       if (bottom - top <= viewBottom - viewTop + 1 || top > viewTop + 1 || bottom < viewBottom - 1) return false;
@@ -60,8 +66,8 @@ export function startPageSnap() {
     if (e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY) || root.style.overflow === 'hidden') return;
     const dy = e.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? e.deltaY : e.deltaY * 40;
     if (canScroll(e.target as Element, dy)) return;
-    const { pad, max, tops } = stops();
-    if (!moving && insideTallSection(dy, pad)) return;
+    const { shown, max, tops } = stops();
+    if (!moving && insideTallSection(dy, shown)) return;
 
     e.preventDefault();
     lastWheel = performance.now();
