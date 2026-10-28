@@ -93,6 +93,9 @@ export function startSnippetBrowser(root: HTMLElement) {
   // Folded to their titles from here on, so the list can be scanned
   query.hidden = false;
   for (const entry of entries) entry.open = false;
+  root.dataset.ready = '';
+  // Opening and closing slide from here on, after the frame that folds them on load
+  requestAnimationFrame(() => requestAnimationFrame(() => { root.dataset.motion = ''; }));
   for (const pre of root.querySelectorAll<HTMLPreElement>('.entry pre')) addCopyButton(pre, announcer);
 
   // Where the list and tree scroll inside the window, they fade out at the bottom until there's nothing more below

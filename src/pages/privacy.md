@@ -3,7 +3,7 @@ layout: ../layouts/Legal.astro
 title: Privacy
 description: What this site records about your visit (page views, counted without cookies) and what it doesn't. No accounts, no forms, no cookies.
 filename: privacy.md
-updated: '2026-10-27'
+updated: '2026-10-28'
 ---
 
 This site is made and run by me, Kieron Oates. It has no accounts, no forms and no cookies, so there isn't much to say, but here it is in full.
@@ -18,6 +18,10 @@ Nothing that identifies you. I count page views with Cloudflare Web Analytics, w
 - how long the page took to load
 
 I only ever see these as totals. If you block the analytics script, the site works exactly the same.
+
+## What's kept in your browser
+
+If you switch between the macOS and Windows looks, the site remembers your choice in your browser's local storage, under the name `theme`, so the next page opens the same way. It never leaves your browser, and clearing your browsing data removes it.
 
 ## Hosting
 

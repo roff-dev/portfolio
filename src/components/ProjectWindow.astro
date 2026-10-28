@@ -21,7 +21,7 @@ const projects = await portfolioProjects();
 
       <div class="panels">
         {projects.map(({ id, data }) => (
-          <article class="panel" id={id} aria-labelledby={`name-${id}`}>
+          <section class="panel" id={id} aria-labelledby={`name-${id}`}>
             <div class="panel__grid">
               <figure class="shot">
                 <Picture src={data.image.src} alt={data.image.alt} formats={['avif', 'webp']} widths={[480, 800, 1200]} sizes="(min-width: 1200px) 560px, (min-width: 900px) 45vw, 92vw" loading="lazy" decoding="async" />
@@ -44,7 +44,7 @@ const projects = await portfolioProjects();
                 </ul>
               </div>
             </div>
-          </article>
+          </section>
         ))}
       </div>
 
@@ -171,7 +171,7 @@ const projects = await portfolioProjects();
   .pager__btn svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .pager__btn:hover { background: var(--surface-raised); }
   .pager__btn:focus-visible { outline-offset: -3px; }
-  .pager__count { flex: none; color: var(--muted); font: 13px var(--font-term); }
+  .pager__count { flex: none; color: var(--text-2); font: 13px var(--font-term); }
 
   .panels { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--term-border) transparent; }
   .panel { padding: 20px 16px 28px; }

@@ -35,13 +35,15 @@ const ogImage = new URL('/og.png', Astro.site);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <!-- The desktop before anything paints: the saved choice, or the device's light or dark setting -->
+    <!-- Before anything paints: the desktop (the saved choice, or the device's light or dark setting), and a js class
+         so pages can lay out what their scripts will show from the first paint rather than shifting when they run -->
     <script is:inline>
       (() => {
         let theme = null;
         try { theme = localStorage.getItem('theme'); } catch {}
         if (theme !== 'mac' && theme !== 'windows') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'windows' : 'mac';
         document.documentElement.dataset.theme = theme;
+        document.documentElement.classList.add('js');
         if (theme === 'windows') document.addEventListener('DOMContentLoaded', () => document.querySelector('meta[name="theme-color"]').content = '#f3f3f3');
       })();
     </script>

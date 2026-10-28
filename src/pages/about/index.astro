@@ -33,7 +33,7 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
       </div>
 
       <div class="wiz__foot" data-foot hidden>
-        <button type="button" class="wiz__btn" data-back>
+        <button type="button" class="wiz__btn" data-back disabled>
           <span class="os-mac">Go Back</span><span class="os-win"><span aria-hidden="true">&lt; </span>Back</span>
         </button>
         <button type="button" class="wiz__btn wiz__btn--go" data-next>
@@ -75,7 +75,7 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
   /* Every step sits in one grid cell (below), so the window is always the height of the tallest one. Where the
      screen is shorter than that, the window stops at the screen and the step scrolls inside it instead */
   @media (min-height: 480px) {
-    .wiz[data-ready] { max-height: calc(var(--screen) - 48px); }
+    :global(.js) .wiz { max-height: calc(var(--screen) - 48px); }
   }
 
   /* The step list across the top on a narrow window, down the left on a wide one */
@@ -114,12 +114,12 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
   }
 
   /* Without JavaScript every step shows, one after another */
-  .wiz:not([data-ready]) .wiz__stage > :global(* + *) { margin-top: 32px; padding-top: 32px; border-top: 1px dashed var(--term-border); }
+  :global(html:not(.js)) .wiz .wiz__stage > :global(* + *) { margin-top: 32px; padding-top: 32px; border-top: 1px dashed var(--term-border); }
   /* With it, every step sits in one grid cell, so the window takes the tallest one's height. Where the screen cuts
      the window short, each step scrolls on its own, so a short step never scrolls through the tallest one's room */
-  .wiz[data-ready] .wiz__pane { display: grid; grid-template-rows: minmax(0, 1fr); padding: 0; overflow: hidden; }
-  .wiz[data-ready] .wiz__stage { display: grid; grid-template-rows: minmax(0, 1fr); min-height: 0; }
-  .wiz[data-ready] .wiz__stage > :global(*) {
+  :global(.js) .wiz .wiz__pane { display: grid; grid-template-rows: minmax(0, 1fr); padding: 0; overflow: hidden; }
+  :global(.js) .wiz .wiz__stage { display: grid; grid-template-rows: minmax(0, 1fr); min-height: 0; }
+  :global(.js) .wiz .wiz__stage > :global(*) {
     grid-area: 1 / 1;
     min-height: 0;
     padding: var(--pad);
@@ -128,6 +128,8 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
     scrollbar-color: var(--term-border) transparent;
   }
   .wiz[data-ready] .wiz__stage > :global([inert]) { visibility: hidden; }
+  /* Until the script has picked a step, the first one shows, so nothing overlaps on the first paint */
+  :global(.js) .wiz:not([data-ready]) .wiz__stage > :global(:not(:first-child)) { visibility: hidden; }
 
   .wiz__foot {
     position: relative;
@@ -137,7 +139,7 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
     padding: 12px 16px 15px;
     border-top: 1px solid var(--term-border);
   }
-  .wiz__foot[hidden] { display: none; }
+  :global(html:not(.js)) .wiz__foot[hidden] { display: none; }
   .wiz__btn {
     min-width: 104px;
     min-height: 44px;
@@ -162,7 +164,7 @@ const included = stops.slice(1, -1).map(({ id, data }) => {
     .wiz__body { grid-template-rows: none; grid-template-columns: 220px minmax(0, 1fr); }
     .wiz__steps { border-bottom: 0; }
     .wiz__steps ol { flex-direction: column; justify-content: flex-start; gap: 2px; padding: 24px 12px; }
-    .wiz:not([data-ready]) .wiz__steps ol { position: sticky; top: calc(var(--chrome-top) + 8px); }
+    :global(html:not(.js)) .wiz .wiz__steps ol { position: sticky; top: calc(var(--chrome-top) + 8px); }
     .wiz__steps a { justify-content: flex-start; padding: 0 12px; }
     .wiz__name { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
     /* macOS: the step sits in an inset pane beside the list, with the buttons under it */

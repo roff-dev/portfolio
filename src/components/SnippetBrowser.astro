@@ -27,7 +27,7 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
     <div class="filters">
       <div class="chips" role="group" aria-label="Language">
         <button type="button" class="chip" data-lang="" aria-pressed="true">all</button>
-        {langs.map((lang) => <button type="button" class="chip" data-lang={lang} aria-pressed="false" aria-label={LANGS[lang]}>{lang}</button>)}
+        {langs.map((lang) => <button type="button" class="chip" data-lang={lang} aria-pressed="false">{lang}<span class="sr-only"> ({LANGS[lang]})</span></button>)}
       </div>
       <label class="project">
         <span>Project</span>
@@ -91,7 +91,8 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
   .lib { overflow: clip; container-type: inline-size; }
 
   .query { display: grid; gap: 12px; padding: 16px; border-bottom: 1px solid var(--term-border); }
-  .query[hidden] { display: none; }
+  /* Shown from the first paint wherever the script will run, so the list doesn't shift down when it arrives */
+  :global(html:not(.js)) .query[hidden] { display: none; }
   .grep { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 1px solid var(--term-border); border-radius: 6px; background: var(--surface); }
   .grep:focus-within { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
   .grep__prompt { color: var(--prompt-user); white-space: nowrap; }
@@ -172,6 +173,9 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
   .tag { padding: 1px 7px; border-radius: 4px; background: var(--tag); color: var(--ink); font: 700 12px/1.5 var(--font-term); }
 
   .entry__body { padding: 0 16px 20px 40px; font-size: 15px; line-height: 1.65; }
+  /* With JavaScript the entries are drawn folded from the first paint, before the script closes them */
+  :global(.js) .lib:not([data-ready]) .entry__body { display: none; }
+  :global(.js) .lib:not([data-ready]) .entry > summary::before { rotate: none; transition: none; }
   .entry__body > :global(p) { max-width: 72ch; margin: 0 0 12px; }
   .entry__body :global(strong) { color: var(--heading); font-weight: 700; }
   .entry__body .prompt { font-size: 14px; }
@@ -235,7 +239,9 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
   /* Opening and closing slide where the browser can animate to the content's own height */
   @supports (interpolate-size: allow-keywords) {
     .entry { interpolate-size: allow-keywords; }
-    .entry::details-content { block-size: 0; overflow: clip; transition: block-size .3s ease, content-visibility .3s allow-discrete; }
+    .entry::details-content { block-size: 0; overflow: clip; }
+    /* Only once the list has settled, so the entries closing on load don't slide shut and shift the page */
+    .lib[data-motion] .entry::details-content { transition: block-size .3s ease, content-visibility .3s allow-discrete; }
     .entry[open]::details-content { block-size: auto; }
   }
 
@@ -246,6 +252,6 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .entry::details-content, .entry > summary::before { transition: none; }
+    .lib[data-motion] .entry::details-content, .entry > summary::before { transition: none; }
   }
 </style>

@@ -79,4 +79,5 @@ html[data-theme="windows"] { color-scheme: light; }
    and the footer snaps to the bottom so it can always be reached. */
 html.snap { scroll-snap-type: y mandatory; }
 .snap .snap-page { scroll-snap-align: start; }
-.snap .footer { scroll-snap-align: end; }
+/* The footer lands clear of the macOS dock, which floats over the bottom of the screen (0 elsewhere) */
+.snap .footer { scroll-snap-align: end; scroll-margin-bottom: var(--dock-room); }
