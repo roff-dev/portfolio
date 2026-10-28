@@ -1,11 +1,20 @@
-// Deploy config for the Cloudflare Worker that serves the built site (static assets only, no script).
+// Deploy config for the Cloudflare Worker that serves the built site from roff-dev.com.
 {
   "name": "portfolio",
   "compatibility_date": "2026-10-01",
+  // Sends the old workers.dev address on to roff-dev.com; everything else is the static site
+  "main": "./worker/index.js",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
+    // The script sees every request first, so it can redirect workers.dev ones before an asset is served
+    "run_worker_first": true,
     // /about serves about/index.html; an unknown path gets 404.html with a 404 status
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
-  }
+  },
+  // The site's own domain. www.roff-dev.com and plain http are redirected by rules on the roff-dev.com zone
+  "routes": [{ "pattern": "roff-dev.com", "custom_domain": true }],
+  // Kept on so old workers.dev links reach the script and are redirected
+  "workers_dev": true
 }

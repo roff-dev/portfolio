@@ -1,5 +1,5 @@
 // The live site; it feeds canonical links, the sitemap, robots.txt and social cards
-export const SITE_URL = 'https://portfolio.kieronoates.workers.dev';
+export const SITE_URL = 'https://roff-dev.com';
 
 export const site = {
   name: 'Kieron Oates',
