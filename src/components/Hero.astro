@@ -5,7 +5,7 @@ import Terminal from './Terminal.astro';
   <Terminal class="hero__term" title="console@kieron-oates:~/portfolio" raised>
     <h1 class="hero__line">
       <span class="sr-only">Kieron Oates, web developer</span>
-      <span aria-hidden="true">$ <span data-typed></span><span class="hero__caret"></span></span>
+      <span aria-hidden="true"><span class="os-mac">$ </span><span class="os-win">PS&gt; </span><span data-typed></span><span class="hero__caret"></span></span>
     </h1>
   </Terminal>
   <a class="hero__next" href="#projects" aria-label="Skip to projects">
@@ -25,10 +25,9 @@ import Terminal from './Terminal.astro';
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     place-items: center;
-    min-height: calc(100vh - var(--taskbar-h));
-    min-height: calc(100svh - var(--taskbar-h));
+    min-height: var(--screen-full);
     /* No side padding: the widths below are of the whole content area, as before */
-    padding: 24px 0 88px;
+    padding: 24px 0 calc(88px + var(--dock-room));
   }
 
   /* The old widths: 90% of the content area, 70% from 768px, 55% from 992px */
@@ -68,7 +67,7 @@ import Terminal from './Terminal.astro';
 
   .hero__next {
     position: absolute;
-    bottom: 15px;
+    bottom: calc(15px + var(--dock-room));
     left: 50%;
     translate: -50% 0;
     display: grid;
@@ -86,7 +85,7 @@ import Terminal from './Terminal.astro';
 
   /* Short screens (a phone on its side, a foldable's cover screen): type sized by height, no arrow */
   @media (max-height: 520px) {
-    .hero { padding-bottom: 24px; }
+    .hero { padding-bottom: calc(24px + var(--dock-room)); }
     .hero__line { min-height: 0; font-size: clamp(18px, 5.5vh, 30px); }
     .hero__next { display: none; }
   }

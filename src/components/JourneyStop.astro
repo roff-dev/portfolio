@@ -1,6 +1,7 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
 import Terminal from './Terminal.astro';
+import Prompt from './Prompt.astro';
 
 interface Props {
   stop: CollectionEntry<'journey'>;
@@ -36,7 +37,7 @@ const Heading = first ? 'h1' : 'h2';
   {hasBody && (
     <Terminal class="notes" title={`kieron@portfolio:~/journey/${id}`}>
       <div class="notes__body">
-        <p class="prompt"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~/journey</span>$ cat {data.file}</p>
+        <Prompt path="~/journey" cmd={`cat ${data.file}`} win={`Get-Content ${data.file}`} />
         <Content />
       </div>
     </Terminal>
@@ -50,9 +51,8 @@ const Heading = first ? 'h1' : 'h2';
     position: relative;
     display: grid;
     align-content: center;
-    min-height: calc(100vh - var(--taskbar-h));
-    min-height: calc(100svh - var(--taskbar-h));
-    padding-block: 64px;
+    min-height: var(--screen-full);
+    padding-block: 64px calc(64px + var(--dock-room));
   }
 
   /* Sits on the branch, with a ring of page colour cutting the line either side */

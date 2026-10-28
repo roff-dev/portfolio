@@ -1,6 +1,7 @@
 ---
 import Base from './Base.astro';
 import Terminal from '../components/Terminal.astro';
+import Prompt from '../components/Prompt.astro';
 
 interface Props {
   frontmatter: {
@@ -20,12 +21,12 @@ const slug = filename.replace(/\.md$/, '');
   <section class="legal" aria-labelledby="legal-title">
     <Terminal title={`kieron@portfolio:~/${slug}`}>
       <div class="legal__body">
-        <p class="prompt" aria-hidden="true"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~</span>$ cat {filename}</p>
+        <Prompt aria-hidden="true" path="~" cmd={`cat ${filename}`} win={`Get-Content ${filename}`} />
         <h1 id="legal-title">{title}</h1>
         <div class="legal__text">
           <slot />
         </div>
-        <p class="prompt legal__log" aria-hidden="true"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~</span>$ git log -1 --format=%cd --date=short {filename}</p>
+        <Prompt class="legal__log" aria-hidden="true" path="~" cmd={`git log -1 --format=%cd --date=short ${filename}`} />
         <p class="legal__date">
           <span class="sr-only">Last updated </span><time datetime={updated}>{updated}</time>
         </p>

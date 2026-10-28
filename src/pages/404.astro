@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import Terminal from '../components/Terminal.astro';
+import Prompt from '../components/Prompt.astro';
+import { winPath } from '../lib/shell';
 
 const commands = [
   { cmd: 'cd ~', href: '/', label: 'the home page' },
@@ -12,8 +14,14 @@ const commands = [
   <section class="nf" aria-labelledby="nf-title">
     <Terminal title="kieron@portfolio:~" raised>
       <div class="nf__body">
-        <p class="prompt"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~</span>$ cd <span data-path>that-page</span></p>
-        <p class="nf__err">bash: cd: <span data-path>that-page</span>: No such file or directory</p>
+        <Prompt path="~" cmd="cd">
+          <Fragment slot="mac">cd <span data-path>that-page</span></Fragment>
+          <Fragment slot="win">cd <span data-path>that-page</span></Fragment>
+        </Prompt>
+        <p class="nf__err">
+          <span class="os-mac">bash: cd: <span data-path>that-page</span>: No such file or directory</span>
+          <span class="os-win">Set-Location: Cannot find path '{winPath('~/')}<span data-path>that-page</span>' because it does not exist.</span>
+        </p>
         <h1 id="nf-title">That page doesn't exist.</h1>
         <p class="nf__try">Try one of these instead.</p>
         <ul class="nf__cmds">
@@ -26,7 +34,10 @@ const commands = [
             </li>
           ))}
         </ul>
-        <p class="prompt nf__idle" aria-hidden="true"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~</span>$ <span class="nf__caret"></span></p>
+        <Prompt class="nf__idle" aria-hidden="true" path="~" cmd="">
+          <Fragment slot="mac"><span class="nf__caret"></span></Fragment>
+          <Fragment slot="win"><span class="nf__caret"></span></Fragment>
+        </Prompt>
       </div>
     </Terminal>
   </section>
@@ -52,7 +63,7 @@ const commands = [
   .nf :global(.term) { max-width: 720px; }
 
   .nf__body { padding: 20px clamp(16px, 4vw, 28px) 24px; font: 16px/1.5 var(--font-term); }
-  .nf__err { margin: 0 0 28px; color: var(--light-red); overflow-wrap: anywhere; }
+  .nf__err { margin: 0 0 28px; color: var(--error); overflow-wrap: anywhere; }
 
   h1 { margin: 0; color: var(--heading); font: 700 clamp(22px, 5vw, 28px)/1.25 var(--font-term); }
   .nf__try { margin: 6px 0 16px; color: var(--text-2); }
@@ -68,7 +79,7 @@ const commands = [
     color: var(--text);
     text-decoration: none;
   }
-  .nf__cmd::before { content: "$"; margin-right: -4px; color: var(--muted); }
+  .nf__cmd::before { content: var(--prompt-mark); margin-right: -4px; color: var(--muted); }
   .nf__run { border-bottom: 1px dashed var(--accent); }
   .nf__note { color: var(--muted); }
   .nf__cmd:hover .nf__run { color: var(--accent-hover); border-bottom-style: solid; }

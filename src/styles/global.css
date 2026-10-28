@@ -3,7 +3,8 @@
 html {
   color-scheme: dark;
   background: var(--page);
-  scroll-padding-bottom: var(--taskbar-h);
+  scroll-padding-top: var(--chrome-top);
+  scroll-padding-bottom: var(--bar-bottom);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -23,6 +24,14 @@ a { color: var(--accent); }
 a:hover { color: var(--accent-hover); }
 
 :focus-visible { outline: 2px solid var(--accent-hover); outline-offset: 3px; }
+
+/* Highlighted code carries both desktops' colours; show the current one */
+.astro-code, .astro-code span { color: var(--shiki-dark); background-color: var(--shiki-dark-bg); }
+[data-theme="windows"] .astro-code, [data-theme="windows"] .astro-code span { color: var(--shiki-light); background-color: var(--shiki-light-bg); }
+
+/* Parts that belong to one desktop: macOS (the default) or Windows */
+html[data-theme="windows"] .os-mac,
+html:not([data-theme="windows"]) .os-win { display: none !important; }
 
 .sr-only {
   position: absolute;
@@ -46,14 +55,15 @@ a:hover { color: var(--accent-hover); }
 }
 .skip:focus { translate: 0 0; }
 
-/* Content area: the whole screen, kept clear of the taskbar along the bottom */
+html[data-theme="windows"] { color-scheme: light; }
+
+/* Content area: the whole screen, kept clear of the menu bar, dock or taskbar */
 .content {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 100vh;
   min-height: 100svh;
-  padding-bottom: var(--taskbar-h);
+  padding: var(--chrome-top) 0 var(--chrome-bottom);
 }
 
 @media (prefers-reduced-motion: reduce) {

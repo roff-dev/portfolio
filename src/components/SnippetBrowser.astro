@@ -1,8 +1,10 @@
 ---
 import { render } from 'astro:content';
 import Terminal from './Terminal.astro';
+import Prompt from './Prompt.astro';
 import FileTree from './FileTree.astro';
 import { allSnippets, fileTree } from '../lib/snippets';
+import { winPath } from '../lib/shell';
 
 const snippets = await Promise.all(
   (await allSnippets()).map(async (snippet) => ({ ...snippet, Content: (await render(snippet.entry)).Content })),
@@ -19,7 +21,7 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
 <Terminal class="lib" title="kieron@portfolio:~/code">
   <search class="query" data-query hidden>
     <label class="grep">
-      <span class="grep__prompt" aria-hidden="true">$ grep</span>
+      <span class="grep__prompt" aria-hidden="true"><span class="os-mac">$ grep</span><span class="os-win">&gt; Select-String</span></span>
       <input type="search" data-q placeholder="Search the code" aria-label="Search the code" maxlength="100" autocomplete="off" spellcheck="false" />
     </label>
     <div class="filters">
@@ -64,9 +66,7 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
               </summary>
               <div class="entry__body">
                 {entry.data.file && (
-                  <p class="prompt">
-                    <span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">~/{projectKey}</span>$ cat {entry.data.file}
-                  </p>
+                  <Prompt path={`~/${projectKey}`} cmd={`cat ${entry.data.file}`} win={`Get-Content ${winPath(entry.data.file)}`} />
                 )}
                 <Content />
                 {projectHref && <a class="cmd" href={projectHref}><span>Open {projectName} in my projects</span></a>}
@@ -116,9 +116,9 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
     .tree {
       display: block;
       position: sticky;
-      top: 16px;
+      top: calc(var(--chrome-top) + 16px);
       align-self: start;
-      max-height: calc(100svh - var(--taskbar-h) - 32px);
+      max-height: calc(var(--screen) - 32px);
       overflow-y: auto;
       scrollbar-width: thin;
       padding: 16px 12px 16px 16px;
@@ -130,7 +130,7 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
   /* Where there's room, the window fills the screen above the taskbar, with the same margin above and below;
      the tree and the list scroll inside it, fading out at the bottom while there's more below */
   @media (min-width: 768px) and (min-height: 560px) {
-    .lib { display: flex; flex-direction: column; height: calc(100svh - var(--taskbar-h) - 48px); }
+    .lib { display: flex; flex-direction: column; height: calc(var(--screen) - 48px); }
     .query { flex-shrink: 0; }
     .lib__body { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); }
     /* Positioned, so the screen-reader labels inside (absolutely positioned) scroll with them rather than
@@ -222,7 +222,7 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
   .entry__body :global(.code__copy:hover) { background: var(--surface-raised); }
 
   .cmd { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--text); font-size: 15px; text-decoration: none; }
-  .cmd::before { content: "$"; color: var(--muted); }
+  .cmd::before { content: var(--prompt-mark); color: var(--muted); }
   .cmd span { border-bottom: 1px dashed var(--accent); }
   .cmd:hover span { color: var(--accent-hover); border-bottom-style: solid; }
 

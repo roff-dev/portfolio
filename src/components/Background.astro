@@ -1,14 +1,57 @@
-<canvas class="bg" aria-hidden="true"></canvas>
+<!-- The desktop wallpaper. macOS: the moving lines. Windows: rolling green hills under a blue sky, drawn here
+     in the spirit of the classic Windows wallpaper (the photograph itself belongs to Microsoft). -->
+<canvas class="bg os-mac" aria-hidden="true"></canvas>
+<svg class="hills os-win" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="hills-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f5fc8" />
+      <stop offset=".45" stop-color="#4b8de3" />
+      <stop offset=".72" stop-color="#9cc8f3" />
+      <stop offset="1" stop-color="#d6eafb" />
+    </linearGradient>
+    <linearGradient id="hills-far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5aa63a" />
+      <stop offset="1" stop-color="#2f7a1f" />
+    </linearGradient>
+    <linearGradient id="hills-near" x1="0" y1="0" x2=".3" y2="1">
+      <stop offset="0" stop-color="#8fd14b" />
+      <stop offset=".35" stop-color="#5fae2e" />
+      <stop offset="1" stop-color="#2c7418" />
+    </linearGradient>
+    <radialGradient id="hills-light" cx=".38" cy=".18" r=".55">
+      <stop offset="0" stop-color="#d9f59a" stop-opacity=".55" />
+      <stop offset="1" stop-color="#d9f59a" stop-opacity="0" />
+    </radialGradient>
+    <filter id="hills-soft" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="14" /></filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#hills-sky)" />
+  <g fill="#fff" filter="url(#hills-soft)">
+    <ellipse cx="300" cy="190" rx="190" ry="34" opacity=".75" />
+    <ellipse cx="420" cy="170" rx="120" ry="40" opacity=".6" />
+    <ellipse cx="1120" cy="120" rx="240" ry="38" opacity=".7" />
+    <ellipse cx="1260" cy="150" rx="150" ry="30" opacity=".55" />
+    <ellipse cx="760" cy="300" rx="260" ry="26" opacity=".45" />
+    <ellipse cx="1450" cy="330" rx="180" ry="22" opacity=".4" />
+  </g>
+  <path d="M0 640C220 600 420 610 640 650s420 70 620 40 260-60 340-70V1000H0Z" fill="url(#hills-far)" />
+  <path d="M0 760C260 610 560 560 860 600s560 170 740 160V1000H0Z" fill="url(#hills-near)" />
+  <path d="M0 760C260 610 560 560 860 600s560 170 740 160V1000H0Z" fill="url(#hills-light)" />
+</svg>
 
 <script>
   import { startBackground } from '../scripts/background';
+  import { currentTheme, type Theme } from '../scripts/theme';
 
-  startBackground(document.querySelector<HTMLCanvasElement>('canvas.bg')!);
+  // The lines only move on the macOS desktop
+  const lines = startBackground(document.querySelector<HTMLCanvasElement>('canvas.bg')!);
+  const follow = (theme: Theme) => lines?.(theme === 'mac');
+  follow(currentTheme());
+  document.addEventListener('themechange', (event) => follow((event as CustomEvent<Theme>).detail));
 </script>
 
 <style>
-  /* Fixed behind every page; windows cover it where they sit, and it shows faintly through the taskbar */
-  .bg {
+  /* Fixed behind every page; windows cover it where they sit, and it shows faintly through the bars */
+  .bg, .hills {
     --lines-dot: #4a4a4a;
     position: fixed;
     inset: 0;

@@ -111,6 +111,8 @@ export function startSnippetBrowser(root: HTMLElement) {
     if (main.scrollHeight <= main.clientHeight) return el.scrollIntoView();
     main.scrollTop += el.getBoundingClientRect().top - main.getBoundingClientRect().top;
     scrollTo({ top: 0 });
+    // On a fresh load the browser makes its own jump to the #link once everything has arrived, so undo that too
+    if (document.readyState !== 'complete') addEventListener('load', () => requestAnimationFrame(() => scrollTo({ top: 0 })), { once: true });
   }
 
   function apply(next: FilterState, { write = true } = {}) {

@@ -3,6 +3,9 @@ import '@fontsource/dm-mono/400.css';
 import '@fontsource/dm-mono/500.css';
 import '@fontsource/courier-prime/400.css';
 import '@fontsource/courier-prime/700.css';
+// Only downloaded when the Windows theme uses it
+import '@fontsource/cascadia-mono/400.css';
+import '@fontsource/cascadia-mono/700.css';
 import '../styles/tokens.css';
 import '../styles/global.css';
 import dmMono400 from '@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2?url';
@@ -28,10 +31,20 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/og.png', Astro.site);
 ---
 <!doctype html>
-<html lang="en-GB" class:list={[{ snap }]}>
+<html lang="en-GB" class:list={[{ snap }]} data-theme="mac">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- The desktop before anything paints: the saved choice, or the device's light or dark setting -->
+    <script is:inline>
+      (() => {
+        let theme = null;
+        try { theme = localStorage.getItem('theme'); } catch {}
+        if (theme !== 'mac' && theme !== 'windows') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'windows' : 'mac';
+        document.documentElement.dataset.theme = theme;
+        if (theme === 'windows') document.addEventListener('DOMContentLoaded', () => document.querySelector('meta[name="theme-color"]').content = '#f3f3f3');
+      })();
+    </script>
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}

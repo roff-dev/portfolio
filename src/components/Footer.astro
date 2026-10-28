@@ -19,6 +19,8 @@ const year = new Date().getFullYear();
     color: var(--muted);
     font-size: 14px;
   }
+  /* Frosted on Windows, where it would otherwise sit on the bright hills */
+  :global([data-theme="windows"]) .footer { background: rgba(249, 249, 249, .82); backdrop-filter: blur(20px); }
   .footer p { margin: 0; }
   .footer ul { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
   .footer a { display: inline-grid; place-items: center; min-height: 44px; padding: 0 8px; color: var(--text-2); }

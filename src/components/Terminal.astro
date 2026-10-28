@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from 'astro/types';
+import TitleBar from './TitleBar.astro';
 
 interface Props extends HTMLAttributes<'div'> {
   /** Text in the title bar, e.g. kieron@portfolio:~/code */
@@ -11,16 +12,7 @@ interface Props extends HTMLAttributes<'div'> {
 const { title, raised = false, class: className, ...attrs } = Astro.props;
 ---
 <div class:list={['term', { 'term--raised': raised }, className]} {...attrs}>
-  <div class="term__bar">
-    <slot name="lights">
-      <span class="term__lights" aria-hidden="true">
-        <span class="term__light" style="--c: var(--light-red)"></span>
-        <span class="term__light" style="--c: var(--light-yellow)"></span>
-        <span class="term__light" style="--c: var(--light-green)"></span>
-      </span>
-    </slot>
-    <span class="term__title">{title.split(/(?<=:)/).map((part, i) => [i > 0 && <wbr />, part])}</span>
-  </div>
+  <TitleBar title={title} />
   <slot />
 </div>
 
@@ -35,30 +27,10 @@ const { title, raised = false, class: className, ...attrs } = Astro.props;
     font-family: var(--font-term);
   }
   .term--raised { box-shadow: var(--shadow-hero); }
-  .term__bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-height: 36px;
-    padding: 0 12px;
-    background: var(--term-header);
-    border-bottom: 1px solid var(--term-border);
-  }
-  .term__lights { display: flex; gap: 8px; }
-  .term__light { width: 12px; height: 12px; border: 0; padding: 0; border-radius: 50%; background: var(--c); }
-  /* The title stays centred on the window, not on the space beside the lights, and wraps rather than hiding the path */
-  .term__title {
-    flex: 1;
-    min-width: 0;
-    margin-right: 56px;
-    padding-block: 8px;
-    text-align: center;
-    color: var(--text-2);
-    font-size: 13px;
-    line-height: 1.4;
-    overflow-wrap: anywhere;
-  }
+  /* Windows 11 outlines every window with a hairline */
+  [data-theme="windows"] .term { outline: 1px solid rgba(0, 0, 0, .1); outline-offset: -1px; }
   .prompt { margin: 0 0 10px; overflow-wrap: anywhere; }
   .prompt__user { color: var(--prompt-user); }
   .prompt__path { color: var(--prompt-path); }
+  .prompt__ps { color: var(--text-2); }
 </style>

@@ -1,5 +1,7 @@
-/* Locked palette and type from the old site's scss/utilities/_config.scss and _scs.scss.
-   Changed at the checkpoint only for contrast (--muted, --placeholder) and the terminal face. */
+/* Two themes, each dressed as a desktop. The default is macOS, dark: the locked palette and type from the old
+   site's scss/utilities/_config.scss and _scs.scss, changed at the checkpoint only for contrast (--muted,
+   --placeholder) and the terminal face. Windows, light, overrides it below. The theme is set on <html> as
+   data-theme before the page paints; without the script the site stays on macOS. */
 :root {
   --page: #181818;
   --surface: #202020;
@@ -24,6 +26,8 @@
   --light-red: #ff5f57;
   --light-yellow: #febc2e;
   --light-green: #28c840;
+  /* A shell's error text */
+  --error: #ff5f57;
 
   --lines: #404040;
   --node: #4d4d4d;
@@ -39,17 +43,73 @@
 
   --font-ui: "DM Mono", ui-monospace, monospace;
   --font-term: "Courier Prime", "Courier New", Courier, monospace;
+  /* The mark before a command: bash's $, PowerShell's > */
+  --prompt-mark: "$";
 
-  --radius-term: 8px;
+  /* macOS 26 rounds its windows more than the old site's 8px */
+  --radius-term: 12px;
   --shadow-hero: 0 20px 40px rgba(0, 0, 0, .4);
   --shadow-term: 0 10px 30px rgba(0, 0, 0, .3);
 
-  /* The taskbar along the bottom of every screen, over the home indicator on phones that have one.
-     Screen-sized sections are the screen less this, so they end where the taskbar starts. */
-  --taskbar-h: calc(56px + env(safe-area-inset-bottom, 0px));
+  /* What the desktop takes from the screen. --chrome-top and --bar-bottom are solid bars that nothing goes behind
+     (here the menu bar, and the home indicator on phones that have one); --dock-room is clear space kept for the
+     floating dock, which screen-sized sections run behind while keeping their content above it. */
+  --chrome-top: 40px;
+  --bar-bottom: env(safe-area-inset-bottom, 0px);
+  --dock-room: 80px;
+  --chrome-bottom: calc(var(--bar-bottom) + var(--dock-room));
+  /* A screen-sized section, and the part of it clear of the dock */
+  --screen-full: calc(100svh - var(--chrome-top) - var(--bar-bottom));
+  --screen: calc(var(--screen-full) - var(--dock-room));
   --gutter: 16px;
+}
+
+/* Windows 11, light: Mica greys, near-black text and the Windows blue. Every text colour is at least 4.5:1 on
+   the white terminal body, the grey title bars and the frosted panels. */
+:root[data-theme="windows"] {
+  --page: #dfe8f2;
+  --surface: #f9f9f9;
+  --surface-raised: #e6e6e6;
+  --term-body: #fff;
+  --term-header: #f3f3f3;
+  --term-border: #d4d4d4;
+
+  --text: #1b1b1b;
+  --text-strong: #000;
+  --text-2: #424242;
+  --muted: #5d5d5d;
+  --placeholder: #5d5d5d;
+
+  --prompt-user: #0e7a0d;
+  --prompt-path: #005fb8;
+  --heading: #8f4e00;
+  --accent: #005fb8;
+  --accent-hover: #003d8f;
+  --keyword: #b4470d;
+  --error: #c42b1c;
+
+  --lines: #c8c8c8;
+  --node: #b4b4b4;
+  --node-on: #5d5d5d;
+
+  --font-term: "Cascadia Mono", Consolas, "Courier New", monospace;
+  --prompt-mark: ">";
+
+  --radius-term: 8px;
+  --shadow-hero: 0 32px 64px rgba(0, 0, 0, .22), 0 2px 21px rgba(0, 0, 0, .14);
+  --shadow-term: 0 8px 16px rgba(0, 0, 0, .14);
+
+  /* Just the taskbar, along the bottom */
+  --chrome-top: 0px;
+  --bar-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  --dock-room: 0px;
 }
 
 @media (min-width: 768px) {
   :root { --gutter: 40px; }
+}
+
+/* Phones have no room for the dock, so macOS keeps only the menu bar */
+@media (max-width: 767px) {
+  :root:not([data-theme="windows"]) { --dock-room: 0px; }
 }

@@ -39,6 +39,8 @@ const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.d
   @media (min-width: 768px) {
     .journey { --lane: 120px; }
   }
+  /* On Windows the journey sits on a frosted sheet, so its type reads against the bright hills behind */
+  :global([data-theme="windows"]) .journey { background: rgba(249, 249, 249, .78); backdrop-filter: blur(24px) saturate(1.4); }
 
   .branch {
     position: absolute;
@@ -89,7 +91,7 @@ const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.d
       position: fixed;
       z-index: 10;
       right: max(12px, env(safe-area-inset-right));
-      bottom: calc(var(--taskbar-h) + 12px);
+      bottom: calc(var(--chrome-bottom) + 12px);
       margin: 0;
       scroll-snap-align: none;
     }

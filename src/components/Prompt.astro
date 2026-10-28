@@ -1,0 +1,23 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { winPath } from '../lib/shell';
+
+interface Props extends HTMLAttributes<'p'> {
+  /** The working directory, the macOS way, e.g. ~/projects */
+  path: string;
+  /** The command in bash, e.g. cat README.md */
+  cmd: string;
+  /** The same command in PowerShell, if it's written differently */
+  win?: string;
+}
+
+const { path, cmd, win = cmd, class: className, ...attrs } = Astro.props;
+// Slotted commands (markup rather than text) are rendered once per shell
+const mac = Astro.slots.has('mac') ? await Astro.slots.render('mac') : null;
+const windows = Astro.slots.has('win') ? await Astro.slots.render('win') : null;
+---
+<!-- The prompt in both shells; the stylesheet shows the current desktop's -->
+<p class:list={['prompt', className]} {...attrs}>
+  <span class="os-mac"><span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path">{path}</span>$ {mac ? <Fragment set:html={mac} /> : cmd}</span>
+  <span class="os-win"><span class="prompt__ps">PS {winPath(path)}&gt;</span> {windows ? <Fragment set:html={windows} /> : win}</span>
+</p>
