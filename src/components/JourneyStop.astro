@@ -2,6 +2,8 @@
 import { getEntry, render, type CollectionEntry } from 'astro:content';
 import Prompt from './Prompt.astro';
 import { fileSize } from '../lib/projects';
+import { SOCIAL_ICONS } from '../lib/icons';
+import { site } from '../site';
 
 interface Props {
   stop: CollectionEntry<'journey'>;
@@ -15,8 +17,15 @@ const { stop, last = false, included } = Astro.props;
 const { id, data } = stop;
 const { Content } = await render(stop);
 const hasBody = Boolean(stop.body?.trim());
-const games = data.lines.find((line) => line.games)?.games;
 const project = data.project ? await getEntry(data.project) : undefined;
+
+/** A line's link, with social:github and the like resolved to my profile in site.ts */
+function resolve(href: string) {
+  const network = href.startsWith('social:') ? (href.slice(7) as keyof typeof site.social) : undefined;
+  if (!network) return { href };
+  const url = new URL(site.social[network]);
+  return { href: url.href, network, address: `${url.host.replace(/^www\./, '')}${url.pathname.replace(/\/$/, '')}` };
+}
 ---
 <!-- One step of the about page's installer. The commit framing stays as a log line, without its hash -->
 <section class="stop" id={id} aria-labelledby={`h-${id}`} data-stop>
@@ -29,23 +38,25 @@ const project = data.project ? await getEntry(data.project) : undefined;
 
   <!-- The lines as tiles across the pane, label over value; a line with a link ends in a command, as links do across the site -->
   <dl class="lines">
-    {data.lines.map((line) => (
-      <div class="tile">
-        <dt>{line.label}</dt>
-        {line.link ? (
-          <dd><a class="cmd" href={line.link.href}><span>{line.text} {line.link.text}</span></a></dd>
-        ) : line.games ? (
-          <dd class="game">
-            <span class="game__name" data-game-name>{line.text}</span>
-            <button type="button" class="game__btn" aria-label="Pick another favourite game" data-games={JSON.stringify(line.games)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4" /></svg>
-            </button>
-          </dd>
-        ) : (
-          <dd>{line.text}</dd>
-        )}
-      </div>
-    ))}
+    {data.lines.map((line) => {
+      const link = line.link && resolve(line.link.href);
+      return (
+        <div class="tile">
+          <dt>
+            {link?.network && <svg class="tile__mark" viewBox="0 0 24 24" aria-hidden="true"><path d={SOCIAL_ICONS[link.network]} /></svg>}
+            {line.label}
+          </dt>
+          {line.link && link ? (
+            <dd>
+              <a class="cmd" href={link.href} rel={link.network ? 'me' : undefined}><span>{line.text} {line.link.text}</span></a>
+              {link.address && <span class="tile__address">{link.address}</span>}
+            </dd>
+          ) : (
+            <dd>{line.text}</dd>
+          )}
+        </div>
+      );
+    })}
   </dl>
 
   {included && (
@@ -67,23 +78,6 @@ const project = data.project ? await getEntry(data.project) : undefined;
         <li><a class="cmd" href={`/#${project.id}`}><span>Open it in the projects window</span></a></li>
         {project.data.links.pdf && <li><a class="cmd" href={project.data.links.pdf} download><span>Download the dissertation</span> <small>(PDF, {fileSize(project.data.links.pdf)})</small></a></li>}
       </ul>
-    </div>
-  )}
-
-  {(games || data.lists.length > 0) && (
-    <div class="extra extra--lists">
-      {games && (
-        <div>
-          <p class="extra__label">The shortlist</p>
-          <ul class="stack">{games.map((game) => <li>{game}</li>)}</ul>
-        </div>
-      )}
-      {data.lists.map((list) => (
-        <div>
-          <p class="extra__label">{list.label}</p>
-          <ul class="stack">{list.items.map((item) => <li>{item}</li>)}</ul>
-        </div>
-      ))}
     </div>
   )}
 
@@ -128,7 +122,12 @@ const project = data.project ? await getEntry(data.project) : undefined;
   }
   .tile dt { color: var(--text-2); }
   .tile dd { margin: 0; color: var(--text); }
-  .tile .cmd { min-height: 32px; }
+  .tile dt { display: flex; align-items: center; gap: 10px; }
+  /* In a narrow tile the command's words wrap, but the mark stays beside them */
+  .tile .cmd { flex-wrap: nowrap; align-items: baseline; min-height: 32px; }
+  .tile .cmd span { min-width: 0; }
+  .tile__mark { flex: none; width: 20px; height: 20px; fill: var(--text); }
+  .tile__address { display: block; color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
 
   /* A command, as the projects window and the code library write their links */
   .cmd { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 44px; color: var(--text); text-decoration: none; }
@@ -137,32 +136,10 @@ const project = data.project ? await getEntry(data.project) : undefined;
   .cmd small { color: var(--muted); font-size: 13px; }
   .cmd:hover span { color: var(--accent-hover); border-bottom-style: solid; }
 
-  /* The picker's button as the code library's filter buttons are: outlined, with a tile on hover */
-  .tile .game { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-block: -8px; }
-  .game__btn {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: 1px solid var(--term-border);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text-2);
-    cursor: pointer;
-  }
-  .game__btn:hover { background: var(--surface-raised); color: var(--text); }
-  .game__btn svg { width: 18px; height: 18px; }
-  :global([data-theme="windows"]) .game__btn { border-radius: 4px; }
-
   .extra { margin-top: 22px; }
-  /* Labels and lists as the projects window's "Built with" and its stack */
+  /* Labels as the projects window's "Built with" */
   .extra__label { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
   .extra__desc { max-width: 62ch; margin: 0 0 4px; font-size: 16px; line-height: 1.65; }
-  .extra--lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 18px 24px; }
-  .stack { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; color: var(--text-2); font-size: 14px; line-height: 1.5; }
-  .stack li::before { content: "+ "; color: var(--prompt-user); }
   .cmds { margin: 0; padding: 0; list-style: none; }
 
   /* The installer's components, each a link to its step */

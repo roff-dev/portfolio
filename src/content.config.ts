@@ -52,15 +52,16 @@ const journey = defineCollection({
         z.strictObject({
           label: z.string(),
           text: z.string(),
-          /** Follows the text, e.g. "See my" + "projects" */
-          link: z.strictObject({ text: z.string(), href: z.string() }).optional(),
-          /** Turns the line into the game picker; text is the game shown without JavaScript */
-          games: z.array(z.string()).min(2).optional(),
+          /**
+           * Follows the text, e.g. "See my" + "projects". An href of social:linkedin or social:github is my profile
+           * from site.ts, shown with its mark and address
+           */
+          link: z
+            .strictObject({ text: z.string(), href: z.string().regex(/^(\/|https:\/\/|social:(linkedin|github)$)/) })
+            .optional(),
         }),
       )
       .min(1),
-    /** Short lists under the lines, shown as a project's stack is */
-    lists: z.array(z.strictObject({ label: z.string(), items: z.array(z.string()).min(1) })).default([]),
     /** A project from this step, shown with its summary and links */
     project: reference('projects').optional(),
     /** The file name shown in the prompt above the body */

@@ -1,8 +1,8 @@
 ---
-order: 4
+order: 3
 step: Training
 heading: Training
-commit: d4
+commit: c3
 message: training
 lines:
   - { label: "Then I trained on…", text: The Scion Coalition Scheme }

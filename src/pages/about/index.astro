@@ -6,7 +6,10 @@ import JourneyStop from '../../components/JourneyStop.astro';
 
 const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.data.order);
 // The first step lists the steps between it and Finish, as an installer lists its components
-const included = stops.slice(1, -1).map(({ id, data }) => ({ id, step: data.step, text: data.lines[0]!.text }));
+const included = stops.slice(1, -1).map(({ id, data }) => {
+  const [first] = data.lines;
+  return { id, step: data.step, text: first!.link ? `${first!.text} ${first!.link.text}` : first!.text };
+});
 ---
 <Base title="About" description="How I got into web development: my degree, the Scion Coalition Scheme at Netmatters, what I'm into, and where to find my work.">
   <section class="about" aria-labelledby="about-title">

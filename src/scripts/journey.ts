@@ -1,13 +1,6 @@
 // The about page's installer. Without this script every step shows, one after another, and the step list
 // links down to them; with it the window shows one step at a time, moved through with Back and Continue,
-// and the address follows the step, so /about/#education opens on Education. It also runs the
-// favourite-game picker.
-
-/** A random game from the list that isn't the one showing */
-export function nextGame(games: readonly string[], current: string, random = Math.random) {
-  const options = games.filter((game) => game !== current);
-  return options[Math.floor(random() * options.length)];
-}
+// and the address follows the step, so /about/#education opens on Education.
 
 export function startWizard(wizard: HTMLElement) {
   const $ = <T extends Element>(selector: string) => wizard.querySelector<T>(selector)!;
@@ -92,36 +85,4 @@ export function startWizard(wizard: HTMLElement) {
   const fromHash = () => Math.max(0, ids.indexOf(decodeURIComponent(location.hash.slice(1))));
   go(fromHash(), { announce: false, updateHash: false });
   addEventListener('hashchange', () => go(fromHash(), { updateHash: false }));
-
-  for (const button of wizard.querySelectorAll<HTMLButtonElement>('[data-games]')) startGamePicker(button, reduce.matches);
-}
-
-/** Same games and behaviour as the old site: a random one on load, and never the same one twice in a row */
-function startGamePicker(button: HTMLButtonElement, reduce: boolean) {
-  const games: string[] = JSON.parse(button.dataset.games!);
-  const name = button.parentElement!.querySelector<HTMLElement>('[data-game-name]')!;
-  const icon = button.querySelector('svg')!;
-  name.textContent = nextGame(games, '');
-  // Announced from here on, so the pick on load isn't read out
-  name.setAttribute('aria-live', 'polite');
-
-  let busy = false;
-  button.addEventListener('click', async () => {
-    if (busy) return;
-    const next = nextGame(games, name.textContent!.trim());
-    if (reduce) {
-      name.textContent = next;
-      return;
-    }
-    busy = true;
-    icon.animate([{ rotate: '0deg' }, { rotate: '360deg' }], { duration: 1000, easing: 'ease' });
-    const hidden = { opacity: 0, translate: '0 10px' };
-    const shown = { opacity: 1, translate: '0 0' };
-    const out = name.animate([shown, hidden], { duration: 300, easing: 'ease', fill: 'forwards' });
-    await out.finished;
-    name.textContent = next;
-    out.cancel();
-    await name.animate([hidden, shown], { duration: 300, easing: 'ease' }).finished;
-    busy = false;
-  });
 }
