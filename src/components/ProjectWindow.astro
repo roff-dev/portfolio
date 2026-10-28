@@ -54,6 +54,19 @@ function fileSize(publicPath: string) {
           </article>
         ))}
       </div>
+
+      <!-- Phones only: on a long project the tabs are a long way up, so these move between projects from the bottom -->
+      <div class="pager" role="group" aria-label="Move between projects" data-pager hidden>
+        <button type="button" class="pager__btn" data-step="-1">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3-5 5 5 5" /></svg>
+          <span data-pager-name></span>
+        </button>
+        <span class="pager__count" data-pager-count></span>
+        <button type="button" class="pager__btn" data-step="1">
+          <span data-pager-name></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg>
+        </button>
+      </div>
     </div>
   </div>
 </section>
@@ -117,7 +130,8 @@ function fileSize(publicPath: string) {
   .tab:focus-visible { outline-offset: -3px; }
 
   /* Windows Terminal: the project tabs move up into the title bar, beside minimise, maximise and close */
-  :global([data-theme="windows"]) .win[data-ready] { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr); }
+  :global([data-theme="windows"]) .win[data-ready] { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr) auto; }
+  :global([data-theme="windows"]) .pager { grid-area: 3 / 1 / 4 / 3; }
   :global([data-theme="windows"]) .win[data-ready] :global(.term__bar),
   :global([data-theme="windows"]) .win[data-ready] .win__body { display: contents; }
   :global([data-theme="windows"]) .win[data-ready] :global(.term__caption) { grid-area: 1 / 2; background: var(--term-header); }
@@ -130,6 +144,41 @@ function fileSize(publicPath: string) {
     :global([data-theme="windows"]) .win[data-ready] :global(.term__caption) { display: none; }
     :global([data-theme="windows"]) .tabs { grid-column: 1 / -1; }
   }
+
+  /* Previous and next along the window's foot, on phones only */
+  .pager { display: none; }
+  @media (max-width: 767px) {
+    .pager:not([hidden]) {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 8px;
+      border-top: 1px solid var(--term-border);
+      background: var(--term-header);
+    }
+  }
+  .pager__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 44px;
+    max-width: 42%;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    font: 14px var(--font-term);
+    cursor: pointer;
+  }
+  .pager__btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pager__btn svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .pager__btn:hover { background: var(--surface-raised); }
+  .pager__btn:focus-visible { outline-offset: -3px; }
+  .pager__count { flex: none; color: var(--muted); font: 13px var(--font-term); }
 
   .panels { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--term-border) transparent; }
   .panel { padding: 20px 16px 28px; }

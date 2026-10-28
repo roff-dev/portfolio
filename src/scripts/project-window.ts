@@ -1,5 +1,5 @@
 // The projects window. Without this script every project shows, stacked; with it the window becomes
-// WAI-ARIA tabs (automatic activation) with deep links.
+// WAI-ARIA tabs (automatic activation) with deep links, and on phones previous and next buttons at its foot.
 
 export function startProjectWindow(section: HTMLElement) {
   const $ = <T extends Element>(selector: string) => section.querySelector<T>(selector)!;
@@ -10,9 +10,13 @@ export function startProjectWindow(section: HTMLElement) {
   const tabs = [...tablist.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
   const panels = tabs.map((tab) => document.getElementById(tab.getAttribute('aria-controls')!)!);
   const ids = panels.map((panel) => panel.id);
+  const pager = $<HTMLElement>('[data-pager]');
+  const steps = [...pager.querySelectorAll<HTMLButtonElement>('[data-step]')];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 
   // Upgrade the static markup into the tabbed window
   tablist.hidden = false;
+  pager.hidden = false;
   // The hash is handled here from now on: renaming the panels stops the browser jumping to and
   // focusing a panel itself, which would scroll the window's title bar off the top of the screen
   panels.forEach((panel, i) => {
@@ -68,7 +72,27 @@ export function startProjectWindow(section: HTMLElement) {
     }
     if (focus) tab.focus();
     if (updateHash) history.replaceState(null, '', `#${ids[i]}`);
+    // The pager names the projects either side, going round at the ends as the arrow keys do
+    for (const button of steps) {
+      const step = Number(button.dataset.step);
+      const id = ids[(i + step + ids.length) % ids.length]!;
+      button.querySelector('[data-pager-name]')!.textContent = id;
+      button.setAttribute('aria-label', `${step < 0 ? 'Previous' : 'Next'} project: ${id}`);
+    }
+    pager.querySelector('[data-pager-count]')!.textContent = `${i + 1} of ${ids.length}`;
   }
+
+  // From the pager, the new project opens at the top of the window, with focus on its tab
+  pager.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>('[data-step]');
+    if (!button) return;
+    const n = tabs.length;
+    const current = tabs.findIndex((tab) => tab.getAttribute('aria-selected') === 'true');
+    const next = (current + Number(button.dataset.step) + n) % n;
+    select(next, { updateHash: true });
+    tabs[next]!.focus({ preventScroll: true });
+    section.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'instant' : 'smooth' });
+  });
 
   tablist.addEventListener('click', (event) => {
     const i = tabs.indexOf((event.target as Element).closest('[role="tab"]') as HTMLButtonElement);
