@@ -1,15 +1,16 @@
 ---
 import { render } from 'astro:content';
 import Terminal from './Terminal.astro';
-import { allSnippets } from '../lib/snippets';
+import FileTree from './FileTree.astro';
+import { allSnippets, fileTree } from '../lib/snippets';
 
 const snippets = await Promise.all(
   (await allSnippets()).map(async (snippet) => ({ ...snippet, Content: (await render(snippet.entry)).Content })),
 );
 const count = snippets.length;
 
-// Folders for the tree and options for the project filter, in library order
-const groups = [...new Map(snippets.map((s) => [s.projectKey, { key: s.projectKey, name: s.projectName, items: snippets.filter((t) => t.projectKey === s.projectKey) }])).values()];
+// Options for the project filter, in library order
+const groups = [...new Map(snippets.map((s) => [s.projectKey, { key: s.projectKey, name: s.projectName }])).values()];
 const LANGS = { ts: 'TypeScript', js: 'JavaScript', glsl: 'GLSL', scss: 'SCSS' } as const;
 const langs = (Object.keys(LANGS) as (keyof typeof LANGS)[]).filter((lang) => snippets.some((s) => s.entry.data.language === lang));
 /** Each tag's text colour, whichever passes 4.5:1 on its background */
@@ -41,14 +42,7 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
     <nav class="tree" aria-label="Snippets by project">
       <p class="tree__root">~/code</p>
       <ul>
-        {groups.map((g) => (
-          <li data-folder>
-            <span class="tree__folder">{g.key}/</span>
-            <ul>
-              {g.items.map(({ entry }) => <li data-tree-item={entry.id}><a href={`#${entry.id}`}>{entry.data.title}</a></li>)}
-            </ul>
-          </li>
-        ))}
+        {fileTree(snippets).map((dir) => <FileTree dir={dir} />)}
       </ul>
     </nav>
 
@@ -94,7 +88,7 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
 
 <style>
   /* clip rather than hidden, so the tree can stick while the page scrolls */
-  .lib { max-width: 1180px; overflow: clip; container-type: inline-size; }
+  .lib { overflow: clip; container-type: inline-size; }
 
   .query { display: grid; gap: 12px; padding: 16px; border-bottom: 1px solid var(--term-border); }
   .query[hidden] { display: none; }
@@ -133,13 +127,28 @@ const INK = { ts: '#fff', js: '#000', glsl: '#000', scss: '#fff' };
       line-height: 1.4;
     }
   }
-  .tree ul { margin: 0; padding: 0; list-style: none; }
-  .tree ul ul { margin: 2px 0 10px 8px; padding-left: 10px; border-left: 1px dashed var(--term-border); }
-  .tree [hidden] { display: none; }
+  /* With the sidebar, the window fills the screen with the same margin above and below; the tree and the
+     list scroll inside it, fading out at the bottom while there's more below */
+  @media (min-width: 768px) and (min-height: 560px) {
+    .lib { display: flex; flex-direction: column; height: calc(100svh - 48px); }
+    .query { flex-shrink: 0; }
+    .lib__body { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+    /* Positioned, so the screen-reader labels inside (absolutely positioned) scroll with them rather than
+       hanging off the page at their unscrolled place and making it taller */
+    .lib__main, .tree {
+      position: relative;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--term-border) transparent;
+      mask-image: linear-gradient(#000 calc(100% - 96px), rgba(0, 0, 0, .15));
+    }
+    .lib__main[data-end], .tree[data-end] { mask-image: none; }
+    .tree { top: auto; align-self: stretch; max-height: none; }
+  }
+
+  /* The folders and files inside are FileTree's */
+  .tree ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
   .tree__root { margin: 0 0 8px; color: var(--prompt-path); }
-  .tree__folder { color: var(--heading); }
-  .tree a { display: block; padding: 5px 4px; color: var(--text-2); text-decoration: none; border-radius: 4px; }
-  .tree a:hover { color: var(--text); background: var(--surface-raised); }
 
   .entries { margin: 0; padding: 0; list-style: none; }
   .entries > li[hidden] { display: none; }

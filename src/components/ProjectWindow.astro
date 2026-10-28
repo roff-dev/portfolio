@@ -5,7 +5,6 @@ import { Picture } from 'astro:assets';
 import { portfolioProjects } from '../lib/projects';
 
 const projects = await portfolioProjects();
-const count = projects.length;
 
 /** "4.9 MB" for a file in public/, so a download link says how big it is */
 function fileSize(publicPath: string) {
@@ -17,60 +16,50 @@ function fileSize(publicPath: string) {
   <h2 id="projects-title" class="sr-only">Projects</h2>
   <div class="win term" data-window>
     <div class="term__bar">
-      <span class="term__lights" aria-hidden="true" data-static-lights>
+      <span class="term__lights" aria-hidden="true">
         <span class="term__light" style="--c: var(--light-red)"></span>
         <span class="term__light" style="--c: var(--light-yellow)"></span>
         <span class="term__light" style="--c: var(--light-green)"></span>
       </span>
-      <span class="term__lights" data-lights hidden>
-        <button type="button" class="term__light" style="--c: var(--light-red)" data-close aria-label="Close full screen" disabled></button>
-        <button type="button" class="term__light" style="--c: var(--light-yellow)" data-min aria-label="Minimise projects" aria-expanded="true" aria-controls="win-body"></button>
-        <button type="button" class="term__light" style="--c: var(--light-green)" data-max aria-label="Expand projects to full screen" aria-pressed="false"></button>
-      </span>
       <span class="term__title" data-title>kieron@portfolio:~/projects</span>
     </div>
 
-    <div class="win__body" id="win-body">
-      <div class="win__inner">
-        <div class="tabs" role="tablist" aria-label="Projects" data-tabs hidden>
-          {projects.map(({ id }, i) => (
-            <button type="button" class="tab" role="tab" id={`tab-${id}`} aria-controls={id} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{id}</button>
-          ))}
-        </div>
+    <div class="win__body">
+      <div class="tabs" role="tablist" aria-label="Projects" data-tabs hidden>
+        {projects.map(({ id }, i) => (
+          <button type="button" class="tab" role="tab" id={`tab-${id}`} aria-controls={id} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{id}</button>
+        ))}
+      </div>
 
-        <div class="panels">
-          {projects.map(({ id, data }) => (
-            <article class="panel" id={id} aria-labelledby={`name-${id}`}>
-              <div class="panel__grid">
-                <figure class="shot">
-                  <Picture src={data.image.src} alt={data.image.alt} formats={['avif', 'webp']} widths={[480, 800, 1200]} sizes="(min-width: 1200px) 560px, (min-width: 900px) 45vw, 92vw" loading="lazy" decoding="async" />
-                </figure>
-                <div class="panel__text">
-                  <p class="prompt">
-                    <span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path"><span class="prompt__long">~/projects/</span><span class="prompt__short">~/</span>{id}</span>$ cat README.md
-                  </p>
-                  <h3 class="panel__name" id={`name-${id}`}>{data.name}</h3>
-                  <p class="panel__desc">{data.description}</p>
-                  <p class="panel__label">Built with</p>
-                  <ul class="stack">
-                    {data.stack.map((item) => <li>{item}</li>)}
-                  </ul>
-                  <ul class="cmds">
-                    {data.links.live && <li><a class="cmd" href={data.links.live}><span>Open {data.name}</span></a></li>}
-                    {data.links.repo && <li><a class="cmd" href={data.links.repo}><span>Read the code on GitHub</span></a></li>}
-                    {data.links.pdf && <li><a class="cmd" href={data.links.pdf} download><span>Download the dissertation</span> <small>(PDF, {fileSize(data.links.pdf)})</small></a></li>}
-                  </ul>
-                </div>
+      <div class="panels">
+        {projects.map(({ id, data }) => (
+          <article class="panel" id={id} aria-labelledby={`name-${id}`}>
+            <div class="panel__grid">
+              <figure class="shot">
+                <Picture src={data.image.src} alt={data.image.alt} formats={['avif', 'webp']} widths={[480, 800, 1200]} sizes="(min-width: 1200px) 560px, (min-width: 900px) 45vw, 92vw" loading="lazy" decoding="async" />
+              </figure>
+              <div class="panel__text">
+                <p class="prompt">
+                  <span class="prompt__user">kieron@portfolio</span>:<span class="prompt__path"><span class="prompt__long">~/projects/</span><span class="prompt__short">~/</span>{id}</span>$ cat README.md
+                </p>
+                <h3 class="panel__name" id={`name-${id}`}>{data.name}</h3>
+                <p class="panel__desc">{data.description}</p>
+                <p class="panel__label">Built with</p>
+                <ul class="stack">
+                  {data.stack.map((item) => <li>{item}</li>)}
+                </ul>
+                <ul class="cmds">
+                  {data.links.live && <li><a class="cmd" href={data.links.live} target="_blank" rel="noopener"><span>Open {data.name}</span> <small aria-hidden="true">↗</small><span class="sr-only">(opens in a new tab)</span></a></li>}
+                  {data.links.repo && <li><a class="cmd" href={data.links.repo}><span>Read the code on GitHub</span></a></li>}
+                  {data.links.pdf && <li><a class="cmd" href={data.links.pdf} download><span>Download the dissertation</span> <small>(PDF, {fileSize(data.links.pdf)})</small></a></li>}
+                </ul>
               </div>
-            </article>
-          ))}
-        </div>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   </div>
-  <p class="dock" data-dock hidden>
-    {count} {count === 1 ? 'project' : 'projects'} minimised <button type="button" data-restore>restore</button>
-  </p>
 </section>
 
 <script>
@@ -95,32 +84,13 @@ function fileSize(publicPath: string) {
     display: flex;
     flex-direction: column;
     max-width: 1180px;
-    view-transition-name: projects-window;
   }
   /* Room to fit the window to the screen: the panel scrolls inside it instead */
   @media (min-width: 768px) and (min-height: 600px) {
     .win[data-ready] { max-height: calc(100svh - var(--bar-h) - 48px); }
   }
 
-  .term__light:not(:disabled) { cursor: pointer; }
-  .term__light:disabled { opacity: .45; cursor: default; }
-  .term__lights[hidden] { display: none; }
-  /* The lights are 12px dots; the buttons around them are a comfortable size to press */
-  [data-lights] { gap: 0; margin-inline: -6px; }
-  [data-lights] .term__light { box-sizing: content-box; width: 12px; height: 12px; padding: 0; border: 10px solid transparent; background-clip: padding-box; }
-  [data-lights] .term__light:focus-visible { outline-offset: -8px; }
-
-  /* Minimising folds the body away; it becomes inert once folded */
-  .win__body {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr);
-    flex: 1 1 auto;
-    min-height: 0;
-    transition: grid-template-rows .35s ease;
-  }
-  .win__inner { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-  .win.is-min .win__body { grid-template-rows: minmax(0, 0fr); }
-  .win.is-min .win__inner { visibility: hidden; transition: visibility 0s .35s; }
+  .win__body { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; }
 
   .tabs {
     flex-shrink: 0;
@@ -192,19 +162,7 @@ function fileSize(publicPath: string) {
     .panel__grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; gap: 32px; }
   }
 
-  /* Full screen: fills the content area beside the sidebar, or the whole screen on a phone */
-  .win.is-max { position: fixed; z-index: 30; inset: 0; width: auto; max-width: none; max-height: none; border-radius: 0; }
-  @media (min-width: 768px) and (min-height: 560px) {
-    .win.is-max { inset: 12px 12px 12px calc(var(--nav-w) + 12px); border-radius: var(--radius-term); }
-  }
-
-  .dock { margin: 14px 0 0; color: var(--text-2); font: 14px var(--font-term); }
-  .dock[hidden] { display: none; }
-  .dock button { min-height: 44px; padding: 0 6px; border: 0; background: none; color: var(--accent); font: inherit; text-decoration: underline dashed; cursor: pointer; }
-  .dock button:hover { color: var(--accent-hover); }
-
   @media (prefers-reduced-motion: reduce) {
-    .win__body, .win.is-min .win__inner { transition: none; }
     .win[data-ready] .panel:not([hidden]) { animation: none; }
   }
 </style>

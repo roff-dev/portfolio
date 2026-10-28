@@ -1,0 +1,64 @@
+---
+import type { TreeDir } from '../lib/snippets';
+
+interface Props {
+  dir: TreeDir;
+}
+
+const { dir } = Astro.props;
+---
+<li data-folder>
+  <details class="dir" open>
+    <summary>{dir.name}/</summary>
+    <ul>
+      {dir.children.map((node) => node.kind === 'dir' ? <Astro.self dir={node} /> : (
+        <li data-tree-item={node.id}>
+          <a class="file" href={`#${node.id}`} title={node.title} style={`--tag: var(--tag-${node.lang})`}>{node.name}<span class="sr-only">: {node.title}</span></a>
+        </li>
+      ))}
+    </ul>
+  </details>
+</li>
+
+<style>
+  li[hidden] { display: none; }
+  ul { margin: 0 0 0 7px; padding: 0 0 0 9px; list-style: none; border-left: 1px dashed var(--term-border); }
+
+  /* Folders open and close like a file explorer's, with the chevron turning */
+  .dir > summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    border-radius: 4px;
+    color: var(--heading);
+    cursor: pointer;
+    list-style: none;
+    overflow-wrap: anywhere;
+  }
+  .dir > summary::-webkit-details-marker { display: none; }
+  .dir > summary::before { content: ">"; flex: none; color: var(--muted); transition: rotate .15s ease; }
+  .dir[open] > summary::before { rotate: 90deg; }
+  .dir > summary:hover { background: var(--surface-raised); }
+  .dir > summary:focus-visible { outline-offset: -2px; }
+
+  /* Files: a dot in the language's colour, then the name */
+  .file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 4px;
+    color: var(--text-2);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .file::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 2px; background: var(--tag); }
+  .file:hover { color: var(--text); background: var(--surface-raised); }
+  .file:focus-visible { outline-offset: -2px; }
+  .file[aria-current="true"] { color: var(--text-strong); background: var(--surface-raised); box-shadow: inset 2px 0 var(--prompt-user); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dir > summary::before { transition: none; }
+  }
+</style>

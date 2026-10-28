@@ -87,10 +87,31 @@ export function startSnippetBrowser(root: HTMLElement) {
   const known = { langs: chips.map((chip) => chip.dataset.lang!).filter(Boolean), projects: [...select.options].map((o) => o.value).filter(Boolean) };
   let state = readState(location.search, known);
 
+  const main = $<HTMLElement>('.lib__main');
+  const tree = $<HTMLElement>('.tree');
+
   // Folded to their titles from here on, so the list can be scanned
   query.hidden = false;
   for (const entry of entries) entry.open = false;
   for (const pre of root.querySelectorAll<HTMLPreElement>('.entry pre')) addCopyButton(pre, announcer);
+
+  // Where the list and tree scroll inside the window, they fade out at the bottom until there's nothing more below
+  const markEnds = () => {
+    for (const box of [main, tree]) box.toggleAttribute('data-end', box.scrollTop + box.clientHeight >= box.scrollHeight - 2);
+  };
+  for (const box of [main, tree]) box.addEventListener('scroll', markEnds, { passive: true });
+  const resized = new ResizeObserver(markEnds);
+  for (const el of [main, list, tree, tree.querySelector('ul')!]) resized.observe(el);
+
+  /**
+   * Brings a snippet to the top of the list. When the list scrolls inside the window, the page itself is put back
+   * at the top, since the browser's own jump to the #link scrolls it too and would push the window's bar off screen.
+   */
+  function reveal(el: HTMLElement) {
+    if (main.scrollHeight <= main.clientHeight) return el.scrollIntoView();
+    main.scrollTop += el.getBoundingClientRect().top - main.getBoundingClientRect().top;
+    scrollTo({ top: 0 });
+  }
 
   function apply(next: FilterState, { write = true } = {}) {
     state = next;
@@ -126,6 +147,30 @@ export function startSnippetBrowser(root: HTMLElement) {
     input.focus();
   });
 
+  /** Marks the open snippet's file in the tree, opening its folders and keeping it in view there */
+  function markCurrent(id: string) {
+    for (const [key, li] of treeItems) {
+      const link = li.querySelector('a')!;
+      if (key !== id) {
+        link.removeAttribute('aria-current');
+        continue;
+      }
+      link.setAttribute('aria-current', 'true');
+      for (let dir = link.closest('details'); dir; dir = dir.parentElement!.closest('details')) dir.open = true;
+      const box = tree.getBoundingClientRect();
+      const at = link.getBoundingClientRect();
+      if (at.top < box.top || at.bottom > box.bottom) tree.scrollTop += at.top - box.top - box.height / 3;
+    }
+  }
+  for (const entry of entries) entry.addEventListener('toggle', () => entry.open && markCurrent(entry.id));
+  // Choosing the file that's already in the address doesn't change it, so open it here
+  tree.addEventListener('click', (event) => {
+    const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+    if (link?.hash !== location.hash) return;
+    event.preventDefault();
+    openFromHash();
+  });
+
   /** /code/#wikiracer-bfs opens that snippet, clearing the filters if they hide it */
   function openFromHash() {
     const i = entries.findIndex((entry) => entry.id === decodeURIComponent(location.hash.slice(1)));
@@ -135,7 +180,8 @@ export function startSnippetBrowser(root: HTMLElement) {
       apply(EMPTY);
     }
     entries[i]!.open = true;
-    entries[i]!.scrollIntoView();
+    reveal(entries[i]!);
+    markCurrent(entries[i]!.id);
   }
 
   input.value = state.q;

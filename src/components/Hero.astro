@@ -2,7 +2,6 @@
 import Terminal from './Terminal.astro';
 ---
 <section class="hero snap-page" aria-label="Introduction">
-  <canvas class="hero__bg" aria-hidden="true"></canvas>
   <Terminal class="hero__term" title="console@kieron-oates:~/portfolio" raised>
     <h1 class="hero__line">
       <span class="sr-only">Kieron Oates, web developer</span>
@@ -16,11 +15,8 @@ import Terminal from './Terminal.astro';
 
 <script>
   import { startTyping } from '../scripts/typing';
-  import { startBackground } from '../scripts/background';
 
-  const hero = document.querySelector<HTMLElement>('.hero')!;
-  startTyping(hero.querySelector<HTMLElement>('[data-typed]')!);
-  startBackground(hero.querySelector<HTMLCanvasElement>('.hero__bg')!, hero);
+  startTyping(document.querySelector<HTMLElement>('.hero [data-typed]')!);
 </script>
 
 <style>
@@ -33,17 +29,6 @@ import Terminal from './Terminal.astro';
     min-height: calc(100svh - var(--bar-h));
     /* No side padding: the widths below are of the whole content area, as before */
     padding: 24px 0 88px;
-  }
-
-  /* Fixed behind everything on the home page; the projects window covers it further down */
-  .hero__bg {
-    --lines-dot: #4a4a4a;
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
   }
 
   /* The old widths: 90% of the content area, 70% from 768px, 55% from 992px */

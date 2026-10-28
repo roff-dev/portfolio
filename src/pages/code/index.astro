@@ -11,4 +11,8 @@ import SnippetBrowser from '../../components/SnippetBrowser.astro';
 
 <style>
   .code-page { padding: 24px var(--gutter) 48px; }
+  /* The library fits the screen, with the same margin above and below */
+  @media (min-width: 768px) and (min-height: 560px) {
+    .code-page { padding-bottom: 24px; }
+  }
 </style>

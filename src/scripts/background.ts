@@ -1,5 +1,5 @@
-// The home background: the old site's moving lines, grown into slow lanes that branch like a git graph.
-// Measured at about 1.6 ms a frame with the CPU throttled 4x; it pauses whenever the hero is out of view.
+// The site background: the old site's moving lines, grown into slow lanes that branch like a git graph.
+// Measured at about 1.6 ms a frame with the CPU throttled 4x; it pauses while the tab is hidden.
 
 interface Lane { x: number; y: number; v: number; len: number; split: number; dx: number }
 
@@ -17,7 +17,7 @@ function makeLane(w: number, h: number): Lane {
   };
 }
 
-export function startBackground(canvas: HTMLCanvasElement, hero: Element) {
+export function startBackground(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const style = getComputedStyle(canvas);
@@ -30,7 +30,6 @@ export function startBackground(canvas: HTMLCanvasElement, hero: Element) {
   let w = 0;
   let h = 0;
   let raf = 0;
-  let visible = true;
   let lanes: Lane[] = [];
 
   function size() {
@@ -83,16 +82,11 @@ export function startBackground(canvas: HTMLCanvasElement, hero: Element) {
     raf = requestAnimationFrame(frame);
   }
 
-  const start = () => { if (!raf && !reduce && visible && !document.hidden) raf = requestAnimationFrame(frame); };
+  const start = () => { if (!raf && !reduce && !document.hidden) raf = requestAnimationFrame(frame); };
   const stop = () => { cancelAnimationFrame(raf); raf = 0; };
 
   size();
   addEventListener('resize', size);
   document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
-  // Ratio, not isIntersecting: a hero only touching the top edge counts as intersecting but shows nothing
-  new IntersectionObserver(([entry]) => {
-    visible = entry.intersectionRatio > 0;
-    if (visible) start(); else stop();
-  }, { threshold: [0, 0.01] }).observe(hero);
   start();
 }

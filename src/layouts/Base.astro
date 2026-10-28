@@ -6,6 +6,7 @@ import '@fontsource/courier-prime/700.css';
 import '../styles/tokens.css';
 import '../styles/global.css';
 import dmMono400 from '@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2?url';
+import Background from '../components/Background.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import PageSnap from '../components/PageSnap.astro';
@@ -22,7 +23,7 @@ interface Props {
 }
 
 const { title, description = site.description, noindex = false, snap = false } = Astro.props;
-const fullTitle = title ? `${title} | ${site.name}` : `${site.name}: web developer`;
+const fullTitle = title ? `${title} | ${site.title}` : site.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/og.png', Astro.site);
 ---
@@ -53,6 +54,7 @@ const ogImage = new URL('/og.png', Astro.site);
   </head>
   <body>
     <a class="skip" href="#content">Skip to content</a>
+    <Background />
     <Nav />
     <div class="content">
       <main id="content" tabindex="-1">

@@ -36,6 +36,51 @@ export async function allSnippets(): Promise<Snippet[]> {
     .map(({ project, ...rest }) => rest);
 }
 
+export interface TreeFile {
+  kind: 'file';
+  name: string;
+  /** The snippet's id */
+  id: string;
+  title: string;
+  lang: string;
+}
+
+export interface TreeDir {
+  kind: 'dir';
+  /** A folder with only one folder inside shows as both, e.g. src/sky */
+  name: string;
+  children: (TreeDir | TreeFile)[];
+}
+
+/**
+ * Each project as a folder of its snippets' files, at their paths in its repo; a snippet without a path is
+ * named after its id. Folders come before files, both alphabetical, as in a file explorer.
+ */
+export function fileTree(snippets: readonly Snippet[]): TreeDir[] {
+  const roots = new Map<string, TreeDir>();
+  for (const { entry, projectKey } of snippets) {
+    if (!roots.has(projectKey)) roots.set(projectKey, { kind: 'dir', name: projectKey, children: [] });
+    const path = (entry.data.file ?? `${entry.id.replace(`${projectKey}-`, '')}.${entry.data.language}`).split('/');
+    let dir = roots.get(projectKey)!;
+    for (const part of path.slice(0, -1)) {
+      let next = dir.children.find((node): node is TreeDir => node.kind === 'dir' && node.name === part);
+      if (!next) dir.children.push((next = { kind: 'dir', name: part, children: [] }));
+      dir = next;
+    }
+    dir.children.push({ kind: 'file', name: path.at(-1)!, id: entry.id, title: entry.data.title, lang: entry.data.language });
+  }
+  const tidy = (dir: TreeDir): TreeDir => {
+    dir.children = dir.children.map((node) => (node.kind === 'dir' ? compact(tidy(node)) : node));
+    dir.children.sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === 'dir' ? -1 : 1));
+    return dir;
+  };
+  const compact = (dir: TreeDir): TreeDir => {
+    const [only] = dir.children;
+    return dir.children.length === 1 && only!.kind === 'dir' ? { ...only!, name: `${dir.name}/${only!.name}` } : dir;
+  };
+  return [...roots.values()].map(tidy);
+}
+
 /** The code and the three explanation paragraphs, as plain text */
 export function parseBody(body: string) {
   const code = body.match(/```\w*\n([\s\S]*?)\n```/)?.[1] ?? '';
