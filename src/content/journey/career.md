@@ -1,7 +1,8 @@
 ---
 order: 5
-heading: Career
-short: now
+step: Finish
+heading: Kieron Oates is installed
+intro: The installation was completed successfully.
 commit: e5
 message: HEAD → main
 lines:

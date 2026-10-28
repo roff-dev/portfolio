@@ -1,7 +1,7 @@
 ---
 order: 4
+step: Training
 heading: Training
-short: scs
 commit: d4
 message: training
 lines:

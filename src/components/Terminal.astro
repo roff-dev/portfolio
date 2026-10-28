@@ -5,14 +5,16 @@ import TitleBar from './TitleBar.astro';
 interface Props extends HTMLAttributes<'div'> {
   /** Text in the title bar, e.g. kieron@portfolio:~/code */
   title: string;
+  /** An app's own title, which Windows shows instead of a terminal tab (see TitleBar) */
+  app?: string;
   /** The larger hero shadow */
   raised?: boolean;
 }
 
-const { title, raised = false, class: className, ...attrs } = Astro.props;
+const { title, app, raised = false, class: className, ...attrs } = Astro.props;
 ---
 <div class:list={['term', { 'term--raised': raised }, className]} {...attrs}>
-  <TitleBar title={title} />
+  <TitleBar title={title} app={app} />
   <slot />
 </div>
 

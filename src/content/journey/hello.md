@@ -1,7 +1,8 @@
 ---
 order: 1
-heading: About me
-short: init
+step: Introduction
+heading: Welcome to the Kieron Oates installer
+intro: This will set up a web developer on your system. Here's what's included.
 commit: a1
 message: init
 lines:

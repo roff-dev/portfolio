@@ -1,7 +1,7 @@
 ---
 order: 3
+step: Hobbies
 heading: Hobbies
-short: hobbies
 commit: c3
 message: hobbies
 lines:

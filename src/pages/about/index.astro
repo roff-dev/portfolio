@@ -1,99 +1,178 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import Terminal from '../../components/Terminal.astro';
 import JourneyStop from '../../components/JourneyStop.astro';
 
 const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.data.order);
 ---
-<Base snap title="About" description="How I got into web development: my degree, the Scion Coalition Scheme at Netmatters, what I'm into, and where to find my work.">
-  <nav class="map" aria-label="Journey">
-    <ol>
-      {stops.map(({ id, data }) => (
-        <li><a href={`#${id}`} aria-label={`${data.short}, ${data.heading}`}>{data.short}</a></li>
-      ))}
-    </ol>
-  </nav>
+<Base title="About" description="How I got into web development: my degree, the Scion Coalition Scheme at Netmatters, what I'm into, and where to find my work.">
+  <section class="about" aria-labelledby="about-title">
+    <h1 class="sr-only" id="about-title">About me</h1>
+    <!-- An installer, picking up the hero's npm install: the macOS Installer on macOS, a classic setup wizard on Windows -->
+    <Terminal class="wiz" title="Install Kieron Oates" app="Kieron Oates Setup" data-wizard>
 
-  <div class="journey" data-journey>
-    <div class="branch" aria-hidden="true">
-      <div class="branch__track"></div>
-      <div class="branch__drawn" data-drawn></div>
-    </div>
-    {stops.map((stop, i) => <JourneyStop stop={stop} first={i === 0} />)}
-  </div>
+      <div class="wiz__body">
+        <nav class="wiz__steps" aria-label="Setup steps">
+          <ol>
+            {stops.map(({ id, data }) => (
+              <li><a href={`#${id}`} data-step-link><span class="wiz__dot" aria-hidden="true"></span><span class="wiz__name">{data.step}</span></a></li>
+            ))}
+          </ol>
+        </nav>
+        <div class="wiz__pane" data-pane>
+          <div class="wiz__stage">
+            {stops.map((stop, i) => <JourneyStop stop={stop} last={i === stops.length - 1} />)}
+          </div>
+        </div>
+      </div>
+
+      <div class="wiz__foot" data-foot hidden>
+        <button type="button" class="wiz__btn" data-back>
+          <span class="os-mac">Go Back</span><span class="os-win"><span aria-hidden="true">&lt; </span>Back</span>
+        </button>
+        <button type="button" class="wiz__btn wiz__btn--go" data-next>
+          <span data-go><span class="os-mac">Continue</span><span class="os-win">Next<span aria-hidden="true"> &gt;</span></span></span>
+          <span data-end hidden>Start Over</span>
+        </button>
+        <div class="wiz__progress" aria-hidden="true"><span data-progress></span></div>
+      </div>
+      <p class="sr-only" aria-live="polite" data-status></p>
+    </Terminal>
+  </section>
 </Base>
 
 <script>
-  import { startJourney } from '../../scripts/journey';
+  import { startWizard } from '../../scripts/journey';
 
-  startJourney(document.querySelector<HTMLElement>('[data-journey]')!, document.querySelector<HTMLElement>('.map')!);
+  startWizard(document.querySelector<HTMLElement>('[data-wizard]')!);
 </script>
 
 <style>
-  /* The branch runs down a lane on the left; the stops sit to its right */
-  .journey {
-    --lane: 40px;
-    position: relative;
-    padding: 0 var(--gutter) 0 calc(var(--lane) + var(--gutter));
-  }
-  @media (min-width: 768px) {
-    .journey { --lane: 120px; }
-  }
-  /* On Windows the journey sits on a frosted sheet, so its type reads against the bright hills behind */
-  :global([data-theme="windows"]) .journey { background: rgba(249, 249, 249, .78); backdrop-filter: blur(24px) saturate(1.4); }
-
-  .branch {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: calc(var(--lane) / 2);
-    width: 4px;
-    translate: -50% 0;
-    pointer-events: none;
-  }
-  .branch__track,
-  .branch__drawn { position: absolute; inset: 0; border-radius: 2px; }
-  .branch__track { background: repeating-linear-gradient(to bottom, var(--surface-raised) 0 10px, transparent 10px 16px); }
-  /* Drawn in full until the script takes over, so the page reads the same without it */
-  .branch__drawn { background: var(--node-on); transform-origin: top; transform: scaleY(var(--p, 1)); }
-
-  /* The jump map: fixed in the corner above the taskbar, or at the top of the page on short screens where it would cover the stops */
-  /* In the flow on short screens, so it needs its own stop or the first stop would snap past it */
-  .map { margin: 12px var(--gutter) 0; scroll-snap-align: start; }
-  .map ol {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    width: fit-content;
-    margin: 0;
-    padding: 6px;
-    list-style: none;
-    background: var(--term-header);
-    border-radius: var(--radius-term);
-    box-shadow: var(--shadow-term);
-  }
-  .map a {
+  .about {
     display: grid;
-    place-items: center;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    justify-items: center;
+    min-height: var(--screen-full);
+    padding: 24px var(--gutter) calc(24px + var(--dock-room));
+  }
+
+  /* As wide as the projects window at most. Clipped rather than hidden, so the step list can stick without JavaScript */
+  .wiz {
+    container-type: inline-size;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-width: 1180px;
+    overflow: clip;
+  }
+  /* Every step sits in one grid cell (below), so the window is always the height of the tallest one. Where the
+     screen is shorter than that, the window stops at the screen and the step scrolls inside it instead */
+  @media (min-height: 480px) {
+    .wiz[data-ready] { max-height: calc(var(--screen) - 48px); }
+  }
+
+  /* The step list across the top on a narrow window, down the left on a wide one */
+  .wiz__body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+
+  .wiz__steps { border-bottom: 1px solid var(--term-border); }
+  .wiz__steps ol { display: flex; justify-content: center; gap: 4px; margin: 0; padding: 4px 8px; list-style: none; }
+  .wiz__steps a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     min-width: 44px;
     min-height: 44px;
-    padding: 0 8px;
     border-radius: 6px;
-    color: var(--text-2);
-    font: 13px var(--font-term);
+    color: var(--muted);
+    font: 14px/1.3 var(--font-ui);
     text-decoration: none;
   }
-  .map a:hover { color: var(--text); background: var(--surface-raised); }
-  .map a[aria-current="step"] { background: var(--term-body); color: var(--text); }
-  .map a:focus-visible { outline-offset: -2px; }
-  @media (min-height: 560px) {
-    .map {
-      position: fixed;
-      z-index: 10;
-      right: max(12px, env(safe-area-inset-right));
-      bottom: calc(var(--chrome-bottom) + 12px);
-      margin: 0;
-      scroll-snap-align: none;
-    }
+  .wiz__steps a:hover { color: var(--text); }
+  .wiz__steps a:focus-visible { outline-offset: -2px; }
+  .wiz__steps a[aria-current] { color: var(--text-strong); font-weight: 500; }
+  .wiz__steps a[data-done] { color: var(--text-2); }
+  /* Just the dots on a narrow window; the names are still read out */
+  .wiz__name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .wiz__dot { flex: none; width: 10px; height: 10px; border: 1.5px solid currentColor; border-radius: 50%; }
+  .wiz__steps a[aria-current] .wiz__dot { border-color: var(--accent); background: var(--accent); }
+  .wiz__steps a[data-done] .wiz__dot { border-color: var(--muted); background: var(--muted); }
+
+  .wiz__pane {
+    min-width: 0;
+    min-height: 0;
+    padding: 20px 16px 24px;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--term-border) transparent;
+  }
+
+  /* Without JavaScript every step shows, one after another */
+  .wiz:not([data-ready]) .wiz__stage > :global(* + *) { margin-top: 32px; padding-top: 32px; border-top: 1px dashed var(--term-border); }
+  .wiz[data-ready] .wiz__stage { display: grid; }
+  .wiz[data-ready] .wiz__stage > :global(*) { grid-area: 1 / 1; }
+  .wiz[data-ready] .wiz__stage > :global([inert]) { visibility: hidden; }
+
+  .wiz__foot {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 16px 15px;
+    border-top: 1px solid var(--term-border);
+  }
+  .wiz__foot[hidden] { display: none; }
+  .wiz__btn {
+    min-width: 104px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--term-border);
+    border-radius: 6px;
+    background: var(--surface-raised);
+    color: var(--text);
+    font: 14px var(--font-ui);
+    cursor: pointer;
+  }
+  .wiz__btn:hover:not(:disabled) { background: var(--term-border); }
+  .wiz__btn:disabled { opacity: .45; cursor: default; }
+  .wiz__btn--go { border-color: var(--accent); background: var(--accent); color: var(--page); }
+  .wiz__btn--go:hover:not(:disabled) { border-color: var(--accent-hover); background: var(--accent-hover); }
+
+  /* Along the window's foot, filling as the steps go by */
+  .wiz__progress { position: absolute; inset: auto 0 0; height: 3px; background: var(--term-border); }
+  .wiz__progress span { display: block; height: 100%; background: var(--accent); transform: scaleX(var(--p, 0)); transform-origin: left; transition: transform .4s ease; }
+
+  @container (min-width: 700px) {
+    .wiz__body { grid-template-rows: none; grid-template-columns: 220px minmax(0, 1fr); }
+    .wiz__steps { border-bottom: 0; }
+    .wiz__steps ol { flex-direction: column; justify-content: flex-start; gap: 2px; padding: 24px 12px; }
+    .wiz:not([data-ready]) .wiz__steps ol { position: sticky; top: calc(var(--chrome-top) + 8px); }
+    .wiz__steps a { justify-content: flex-start; padding: 0 12px; }
+    .wiz__name { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+    /* macOS: the step sits in an inset pane beside the list, with the buttons under it */
+    .wiz__pane { margin: 16px 16px 0 0; padding: 28px 32px; border: 1px solid var(--term-border); border-radius: 8px; background: var(--surface); }
+    .wiz__foot { padding: 14px 16px 17px; border-top: 0; }
+  }
+
+  /* Windows: a classic setup wizard, its step list on a Windows-blue banner and a grey strip of buttons */
+  :global([data-theme="windows"]) .wiz__steps { border-bottom: 0; background: linear-gradient(170deg, var(--accent), var(--accent-hover)); }
+  :global([data-theme="windows"]) .wiz__steps a { color: rgba(255, 255, 255, .85); }
+  :global([data-theme="windows"]) .wiz__steps a:hover,
+  :global([data-theme="windows"]) .wiz__steps a[aria-current] { color: #fff; }
+  :global([data-theme="windows"]) .wiz__steps a:focus-visible { outline-color: #fff; }
+  :global([data-theme="windows"]) .wiz__steps a[aria-current] .wiz__dot { border-color: #fff; background: #fff; }
+  :global([data-theme="windows"]) .wiz__steps a[data-done] .wiz__dot { border-color: rgba(255, 255, 255, .85); background: rgba(255, 255, 255, .85); }
+  :global([data-theme="windows"]) .wiz__pane { margin: 0; border: 0; border-radius: 0; background: transparent; }
+  :global([data-theme="windows"]) .wiz__foot { border-top: 1px solid var(--term-border); background: var(--term-header); }
+  :global([data-theme="windows"]) .wiz__btn { border-radius: 4px; }
+  :global([data-theme="windows"]) .wiz__btn--go { color: #fff; }
+  @container (min-width: 700px) {
+    :global([data-theme="windows"]) .wiz__pane { padding: 32px 36px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wiz__progress span { transition: none; }
   }
 </style>

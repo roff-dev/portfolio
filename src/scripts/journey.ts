@@ -1,6 +1,7 @@
-// The about journey. Without this script every stop shows and the branch is drawn in full; with it the
-// branch draws itself as you scroll, the stop in the middle of the screen lights up, and the jump map
-// and the address follow it. It also runs the favourite-game picker.
+// The about page's installer. Without this script every step shows, one after another, and the step list
+// links down to them; with it the window shows one step at a time, moved through with Back and Continue,
+// and the address follows the step, so /about/#education opens on Education. It also runs the
+// favourite-game picker.
 
 /** A random game from the list that isn't the one showing */
 export function nextGame(games: readonly string[], current: string, random = Math.random) {
@@ -8,53 +9,81 @@ export function nextGame(games: readonly string[], current: string, random = Mat
   return options[Math.floor(random() * options.length)];
 }
 
-export function startJourney(journey: HTMLElement, map: HTMLElement) {
-  const stops = [...journey.querySelectorAll<HTMLElement>('[data-stop]')];
-  const links = stops.map((stop) => map.querySelector<HTMLAnchorElement>(`a[href="#${stop.id}"]`));
-  const drawn = journey.querySelector<HTMLElement>('[data-drawn]')!;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+export function startWizard(wizard: HTMLElement) {
+  const $ = <T extends Element>(selector: string) => wizard.querySelector<T>(selector)!;
+  const steps = [...wizard.querySelectorAll<HTMLElement>('[data-stop]')];
+  const ids = steps.map((step) => step.id);
+  const links = [...wizard.querySelectorAll<HTMLAnchorElement>('[data-step-link]')];
+  const names = links.map((link) => link.textContent!.trim());
+  const pane = $<HTMLElement>('[data-pane]');
+  const foot = $<HTMLElement>('[data-foot]');
+  const back = $<HTMLButtonElement>('[data-back]');
+  const next = $<HTMLButtonElement>('[data-next]');
+  const progress = $<HTMLElement>('[data-progress]');
+  const status = $<HTMLElement>('[data-status]');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 
-  // Progress comes straight from the scroll position, with no animation of its own, so it can't
-  // lag behind or fight the input. With reduced motion the branch stays fully drawn.
-  if (!reduce) {
-    let queued = false;
-    const draw = () => {
-      queued = false;
-      const box = journey.getBoundingClientRect();
-      const progress = Math.min(1, Math.max(0, (innerHeight / 2 - box.top) / box.height));
-      drawn.style.setProperty('--p', progress.toFixed(4));
-    };
-    const queue = () => {
-      if (queued) return;
-      queued = true;
-      requestAnimationFrame(draw);
-    };
-    addEventListener('scroll', queue, { passive: true });
-    addEventListener('resize', queue);
-    document.fonts?.ready.then(queue);
-    draw();
+  // The hash is handled here from now on: renaming the steps stops the browser scrolling to one itself,
+  // which would push the window's title bar off the top of the screen
+  steps.forEach((step, i) => { step.id = `step-${ids[i]}`; });
+  foot.hidden = false;
+  // Every step now sits in the same place, so the window keeps the size of the tallest whichever is showing
+  wizard.dataset.ready = '';
+
+  let at = -1;
+  let sliding: Animation[] = [];
+
+  function go(i: number, { announce = true, updateHash = true } = {}) {
+    if (i === at) return;
+    const from = at;
+    at = i;
+    const last = steps.length - 1;
+    steps.forEach((step, j) => { step.inert = j !== i; });
+    links.forEach((link, j) => {
+      if (j === i) link.setAttribute('aria-current', 'step');
+      else link.removeAttribute('aria-current');
+      link.toggleAttribute('data-done', j < i);
+    });
+    pane.scrollTop = 0;
+
+    // The new step slides in from the side it's coming from, and the old one leaves by the other
+    sliding.forEach((animation) => animation.cancel());
+    sliding = [];
+    if (from >= 0 && !reduce.matches) {
+      const dir = i > from ? 1 : -1;
+      sliding = [
+        steps[i]!.animate([{ opacity: 0, translate: `${dir * 48}px 0` }, { opacity: 1, translate: '0 0' }], { duration: 320, easing: 'cubic-bezier(.2, .8, .2, 1)' }),
+        steps[from]!.animate(
+          [{ visibility: 'visible', opacity: 1, translate: '0 0' }, { visibility: 'visible', opacity: 0, translate: `${dir * -48}px 0` }],
+          { duration: 200, easing: 'ease-in' },
+        ),
+      ];
+    }
+
+    // Back has nothing to go back to on the first step, so focus moves on rather than being lost with it
+    if (i === 0 && document.activeElement === back) next.focus();
+    back.disabled = i === 0;
+    next.querySelector<HTMLElement>('[data-go]')!.hidden = i === last;
+    next.querySelector<HTMLElement>('[data-end]')!.hidden = i !== last;
+    progress.style.setProperty('--p', String((i + 1) / steps.length));
+    if (announce) status.textContent = `Step ${i + 1} of ${steps.length}: ${names[i]}`;
+    // The first step is the page itself, so it gets no hash
+    if (updateHash) history.replaceState(null, '', i === 0 ? location.pathname + location.search : `#${ids[i]}`);
   }
 
-  // The address only follows once the page has scrolled, so it never overwrites a deep link
-  // that the browser hasn't scrolled to yet
-  let follow = false;
-  addEventListener('scroll', () => { follow = true; }, { once: true, passive: true });
+  back.addEventListener('click', () => go(Math.max(0, at - 1)));
+  // Continue, or Start Over from the last step
+  next.addEventListener('click', () => go(at === steps.length - 1 ? 0 : at + 1));
+  links.forEach((link, i) => link.addEventListener('click', (event) => {
+    event.preventDefault();
+    go(i);
+  }));
 
-  function arrive(i: number) {
-    stops.forEach((stop, j) => stop.classList.toggle('is-here', i === j));
-    links.forEach((link, j) => (i === j ? link?.setAttribute('aria-current', 'step') : link?.removeAttribute('aria-current')));
-    // The first stop is the page itself, so it gets no hash
-    const hash = i === 0 ? '' : `#${stops[i].id}`;
-    if (follow && location.hash !== hash) history.replaceState(null, '', hash || location.pathname + location.search);
-  }
+  const fromHash = () => Math.max(0, ids.indexOf(decodeURIComponent(location.hash.slice(1))));
+  go(fromHash(), { announce: false, updateHash: false });
+  addEventListener('hashchange', () => go(fromHash(), { updateHash: false }));
 
-  // A stop is "here" while it crosses the middle of the screen
-  const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) if (entry.isIntersecting) arrive(stops.indexOf(entry.target as HTMLElement));
-  }, { rootMargin: '-50% 0px -50% 0px' });
-  stops.forEach((stop) => observer.observe(stop));
-
-  for (const button of journey.querySelectorAll<HTMLButtonElement>('[data-games]')) startGamePicker(button, reduce);
+  for (const button of wizard.querySelectorAll<HTMLButtonElement>('[data-games]')) startGamePicker(button, reduce.matches);
 }
 
 /** Same games and behaviour as the old site: a random one on load, and never the same one twice in a row */

@@ -32,16 +32,19 @@ const projects = defineCollection({
     }),
 });
 
-// The about page's journey: one Markdown file per stop. The body, if there is one, is shown
-// as a file in a terminal under the stop's big type.
+// The about page's journey: one Markdown file per stop, each a step of the installer. The body, if
+// there is one, is shown as a file under the step's lines.
 const journey = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/journey' }),
   schema: z.object({
     order: z.number().int(),
-    /** The stop's heading for screen readers; the big type carries it visually */
+    /** Its name in the installer's step list */
+    step: z.string().max(14),
+    /** The step's heading */
     heading: z.string(),
-    /** Its name in the jump map */
-    short: z.string().max(8),
+    /** A line under the heading, as an installer explains each step */
+    intro: z.string().optional(),
+    /** The commit's short hash; kept in the content, but only the message is shown */
     commit: z.string(),
     message: z.string(),
     lines: z

@@ -1,7 +1,7 @@
 ---
 order: 2
+step: Education
 heading: Education
-short: edu
 commit: b2
 message: education
 lines:
