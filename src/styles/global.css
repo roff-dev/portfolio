@@ -66,3 +66,9 @@ a:hover { color: var(--accent-hover); }
     scroll-behavior: auto !important;
   }
 }
+
+/* Pages that move a screen at a time. A section taller than the screen still scrolls freely inside,
+   and the footer snaps to the bottom so it can always be reached. */
+html.snap { scroll-snap-type: y mandatory; }
+.snap .snap-page { scroll-snap-align: start; }
+.snap .footer { scroll-snap-align: end; }

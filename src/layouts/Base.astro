@@ -8,6 +8,7 @@ import '../styles/global.css';
 import dmMono400 from '@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2?url';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import PageSnap from '../components/PageSnap.astro';
 import { site } from '../site';
 
 interface Props {
@@ -16,15 +17,17 @@ interface Props {
   description?: string;
   /** Keep the page out of search results (the not-found page has no address of its own) */
   noindex?: boolean;
+  /** Each scroll moves a whole screen: sections marked .snap-page snap into place */
+  snap?: boolean;
 }
 
-const { title, description = site.description, noindex = false } = Astro.props;
+const { title, description = site.description, noindex = false, snap = false } = Astro.props;
 const fullTitle = title ? `${title} | ${site.name}` : `${site.name}: web developer`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/og.png', Astro.site);
 ---
 <!doctype html>
-<html lang="en-GB">
+<html lang="en-GB" class:list={[{ snap }]}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -57,6 +60,7 @@ const ogImage = new URL('/og.png', Astro.site);
       </main>
       <Footer />
     </div>
+    {snap && <PageSnap />}
     {import.meta.env.PROD && site.analyticsToken && (
       <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: site.analyticsToken })}></script>
     )}

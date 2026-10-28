@@ -14,7 +14,7 @@ const { Content } = await render(stop);
 const hasBody = Boolean(stop.body?.trim());
 const Heading = first ? 'h1' : 'h2';
 ---
-<section class="stop" id={id} aria-labelledby={`h-${id}`} data-stop>
+<section class="stop snap-page" id={id} aria-labelledby={`h-${id}`} data-stop>
   <span class="stop__node" aria-hidden="true"></span>
   <p class="log">commit <b>{data.commit}</b> · {data.message}</p>
   <Heading class="sr-only" id={`h-${id}`}>{data.heading}</Heading>

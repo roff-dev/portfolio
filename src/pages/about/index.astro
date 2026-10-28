@@ -5,7 +5,7 @@ import JourneyStop from '../../components/JourneyStop.astro';
 
 const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.data.order);
 ---
-<Base title="About" description="How I got into web development: my degree, the Scion Coalition Scheme at Netmatters, what I'm into, and where to find my work.">
+<Base snap title="About" description="How I got into web development: my degree, the Scion Coalition Scheme at Netmatters, what I'm into, and where to find my work.">
   <nav class="map" aria-label="Journey">
     <ol>
       {stops.map(({ id, data }) => (
@@ -56,7 +56,8 @@ const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.d
   .branch__drawn { background: var(--node-on); transform-origin: top; transform: scaleY(var(--p, 1)); }
 
   /* The jump map: fixed in the corner, or at the top of the page on short screens where it would cover the stops */
-  .map { margin: 12px var(--gutter) 0; }
+  /* In the flow on short screens, so it needs its own stop or the first stop would snap past it */
+  .map { margin: 12px var(--gutter) 0; scroll-snap-align: start; }
   .map ol {
     display: flex;
     flex-wrap: wrap;
@@ -90,6 +91,7 @@ const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.d
       right: max(12px, env(safe-area-inset-right));
       bottom: max(12px, env(safe-area-inset-bottom));
       margin: 0;
+      scroll-snap-align: none;
     }
   }
 </style>
