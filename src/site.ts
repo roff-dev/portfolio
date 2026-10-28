@@ -1,4 +1,4 @@
-// The site URL is a placeholder until the Worker exists; it feeds canonical links, the sitemap and social cards
+// The live site; it feeds canonical links, the sitemap, robots.txt and social cards
 export const SITE_URL = 'https://portfolio.kieronoates.workers.dev';
 
 export const site = {
