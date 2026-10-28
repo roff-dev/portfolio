@@ -78,6 +78,16 @@ export function startWizard(wizard: HTMLElement) {
     event.preventDefault();
     go(i);
   }));
+  // A link to a step from inside a step (the first step's list) moves focus to that step in the step list,
+  // since the link itself goes out of reach with the step it's in
+  pane.addEventListener('click', (event) => {
+    const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+    const i = link ? ids.indexOf(decodeURIComponent(link.hash.slice(1))) : -1;
+    if (i < 0) return;
+    event.preventDefault();
+    go(i);
+    links[i]!.focus();
+  });
 
   const fromHash = () => Math.max(0, ids.indexOf(decodeURIComponent(location.hash.slice(1))));
   go(fromHash(), { announce: false, updateHash: false });

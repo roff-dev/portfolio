@@ -10,4 +10,7 @@ lines:
   - label: "And my favourite game is…"
     text: Minecraft
     games: [Minecraft, COD, Overwatch, Terraria, Hearthstone, Yu-Gi-Oh, Pokemon]
+lists:
+  - label: "Lately I've been building with"
+    items: [TypeScript, Svelte 5, three.js and GLSL, Web Workers, WebAssembly, Cloudflare Workers]
 ---

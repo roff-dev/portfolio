@@ -83,6 +83,23 @@ import Terminal from './Terminal.astro';
     .hero__next:hover svg { scale: 1.1; }
   }
 
+  /* Windows: a frosted button with a thin Fluent-style chevron, like the panels and caption buttons around it */
+  :global([data-theme="windows"]) .hero__next {
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: 8px;
+    background: rgba(249, 249, 249, .82);
+    backdrop-filter: blur(20px) saturate(1.4);
+    box-shadow: var(--shadow-term);
+    color: var(--text);
+  }
+  :global([data-theme="windows"]) .hero__next svg { width: 20px; height: 20px; stroke-width: 1.6; }
+  @media (hover: hover) {
+    :global([data-theme="windows"]) .hero__next:hover { background: #fff; }
+    :global([data-theme="windows"]) .hero__next:hover svg { scale: 1; translate: 0 2px; transition: translate .2s ease; }
+  }
+
   /* Short screens (a phone on its side, a foldable's cover screen): type sized by height, no arrow */
   @media (max-height: 520px) {
     .hero { padding-bottom: calc(24px + var(--dock-room)); }

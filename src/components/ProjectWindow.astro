@@ -1,18 +1,11 @@
 ---
-import fs from 'node:fs';
-import path from 'node:path';
 import { Picture } from 'astro:assets';
 import TitleBar from './TitleBar.astro';
-import { portfolioProjects } from '../lib/projects';
+import { fileSize, portfolioProjects } from '../lib/projects';
 import { winPath } from '../lib/shell';
 
 const projects = await portfolioProjects();
 
-/** "4.9 MB" for a file in public/, so a download link says how big it is */
-function fileSize(publicPath: string) {
-  const bytes = fs.statSync(path.join(process.cwd(), 'public', publicPath)).size;
-  return bytes >= 1e6 ? `${(bytes / 1e6).toFixed(1)} MB` : `${Math.round(bytes / 1e3)} KB`;
-}
 ---
 <section class="projects snap-page" id="projects" aria-labelledby="projects-title">
   <h2 id="projects-title" class="sr-only">Projects</h2>

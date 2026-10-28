@@ -5,6 +5,8 @@ import Terminal from '../../components/Terminal.astro';
 import JourneyStop from '../../components/JourneyStop.astro';
 
 const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.data.order);
+// The first step lists the steps between it and Finish, as an installer lists its components
+const included = stops.slice(1, -1).map(({ id, data }) => ({ id, step: data.step, text: data.lines[0]!.text }));
 ---
 <Base title="About" description="How I got into web development: my degree, the Scion Coalition Scheme at Netmatters, what I'm into, and where to find my work.">
   <section class="about" aria-labelledby="about-title">
@@ -22,7 +24,7 @@ const stops = (await getCollection('journey')).sort((a, b) => a.data.order - b.d
         </nav>
         <div class="wiz__pane" data-pane>
           <div class="wiz__stage">
-            {stops.map((stop, i) => <JourneyStop stop={stop} last={i === stops.length - 1} />)}
+            {stops.map((stop, i) => <JourneyStop stop={stop} last={i === stops.length - 1} included={i === 0 ? included : undefined} />)}
           </div>
         </div>
       </div>

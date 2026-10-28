@@ -59,6 +59,10 @@ const journey = defineCollection({
         }),
       )
       .min(1),
+    /** Short lists under the lines, shown as a project's stack is */
+    lists: z.array(z.strictObject({ label: z.string(), items: z.array(z.string()).min(1) })).default([]),
+    /** A project from this step, shown with its summary and links */
+    project: reference('projects').optional(),
     /** The file name shown in the prompt above the body */
     file: z.string().default('notes.txt'),
   }),

@@ -1,17 +1,22 @@
 ---
-import { render, type CollectionEntry } from 'astro:content';
+import { getEntry, render, type CollectionEntry } from 'astro:content';
 import Prompt from './Prompt.astro';
+import { fileSize } from '../lib/projects';
 
 interface Props {
   stop: CollectionEntry<'journey'>;
   /** The last step, where setup is complete */
   last?: boolean;
+  /** On the first step, what the installer goes on to cover: each later step with its first value */
+  included?: { id: string; step: string; text: string }[];
 }
 
-const { stop, last = false } = Astro.props;
+const { stop, last = false, included } = Astro.props;
 const { id, data } = stop;
 const { Content } = await render(stop);
 const hasBody = Boolean(stop.body?.trim());
+const games = data.lines.find((line) => line.games)?.games;
+const project = data.project ? await getEntry(data.project) : undefined;
 ---
 <!-- One step of the about page's installer. The commit framing stays as a log line, without its hash -->
 <section class="stop" id={id} aria-labelledby={`h-${id}`} data-stop>
@@ -21,10 +26,11 @@ const hasBody = Boolean(stop.body?.trim());
   <p class="log">commit · <b>{data.message}</b></p>
   <h2 class="stop__title" id={`h-${id}`}>{data.heading}</h2>
   {data.intro && <p class="stop__intro">{data.intro}</p>}
-  <!-- Each line reads as one sentence, label then value; a line with a link ends in a command, as links do across the site -->
+
+  <!-- The lines as tiles across the pane, label over value; a line with a link ends in a command, as links do across the site -->
   <dl class="lines">
     {data.lines.map((line) => (
-      <div class:list={{ lines__cmd: line.link }}>
+      <div class="tile">
         <dt>{line.label}</dt>
         {line.link ? (
           <dd><a class="cmd" href={line.link.href}><span>{line.text} {line.link.text}</span></a></dd>
@@ -32,7 +38,7 @@ const hasBody = Boolean(stop.body?.trim());
           <dd class="game">
             <span class="game__name" data-game-name>{line.text}</span>
             <button type="button" class="game__btn" aria-label="Pick another favourite game" data-games={JSON.stringify(line.games)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4" /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4" /></svg>
             </button>
           </dd>
         ) : (
@@ -41,6 +47,46 @@ const hasBody = Boolean(stop.body?.trim());
       </div>
     ))}
   </dl>
+
+  {included && (
+    <div class="extra">
+      <p class="extra__label">What's included</p>
+      <ul class="included">
+        {included.map((part) => (
+          <li><a href={`#${part.id}`}><span class="included__name">{part.step}</span> <span class="included__text">{part.text}</span></a></li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  {project && (
+    <div class="extra">
+      <p class="extra__label">{project.data.name}</p>
+      <p class="extra__desc">{project.data.summary}</p>
+      <ul class="cmds">
+        <li><a class="cmd" href={`/#${project.id}`}><span>Open it in the projects window</span></a></li>
+        {project.data.links.pdf && <li><a class="cmd" href={project.data.links.pdf} download><span>Download the dissertation</span> <small>(PDF, {fileSize(project.data.links.pdf)})</small></a></li>}
+      </ul>
+    </div>
+  )}
+
+  {(games || data.lists.length > 0) && (
+    <div class="extra extra--lists">
+      {games && (
+        <div>
+          <p class="extra__label">The shortlist</p>
+          <ul class="stack">{games.map((game) => <li>{game}</li>)}</ul>
+        </div>
+      )}
+      {data.lists.map((list) => (
+        <div>
+          <p class="extra__label">{list.label}</p>
+          <ul class="stack">{list.items.map((item) => <li>{item}</li>)}</ul>
+        </div>
+      ))}
+    </div>
+  )}
+
   <!-- Like an installer's Read Me: on a wide window the file scrolls in its own box -->
   {hasBody && (
     <div class="notes" role="region" aria-label={data.file} tabindex="0">
@@ -65,37 +111,67 @@ const hasBody = Boolean(stop.body?.trim());
   /* Body text as a project's description has it */
   .stop__intro { max-width: 62ch; margin: 0 0 18px; font-size: 16px; line-height: 1.65; }
 
-  .lines { display: grid; gap: 4px; max-width: 62ch; margin: 0; font-size: 16px; line-height: 1.65; overflow-wrap: break-word; }
-  .lines dt,
-  .lines dd { display: inline; margin: 0; }
-  .lines dt { margin-right: 1ch; color: var(--text-2); }
-  .lines dd { color: var(--text); }
-  .lines__cmd { margin-top: 10px; }
-  .lines__cmd dt,
-  .lines__cmd dd { display: block; }
+  /* As many tiles to a row as fit, so a step's lines fill the width of the pane */
+  .lines { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 12px; margin: 0; }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--term-border);
+    border-radius: 6px;
+    background: var(--term-body);
+    font-size: 16px;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+  }
+  .tile dt { color: var(--text-2); }
+  .tile dd { margin: 0; color: var(--text); }
+  .tile .cmd { min-height: 32px; }
 
   /* A command, as the projects window and the code library write their links */
-  .cmd { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--text); text-decoration: none; }
+  .cmd { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 44px; color: var(--text); text-decoration: none; }
   .cmd::before { content: var(--prompt-mark); color: var(--muted); }
   .cmd span { border-bottom: 1px dashed var(--accent); }
+  .cmd small { color: var(--muted); font-size: 13px; }
   .cmd:hover span { color: var(--accent-hover); border-bottom-style: solid; }
 
-  .lines .game { display: inline-flex; align-items: center; gap: 10px; vertical-align: middle; }
+  /* The picker's button as the code library's filter buttons are: outlined, with a tile on hover */
+  .tile .game { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-block: -8px; }
   .game__btn {
-    flex: 0 0 auto;
+    flex: none;
     display: grid;
     place-items: center;
     width: 44px;
     height: 44px;
     padding: 0;
     border: 1px solid var(--term-border);
-    border-radius: 50%;
-    background: var(--term-header);
-    color: var(--text);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-2);
     cursor: pointer;
   }
-  .game__btn:hover { background: var(--surface-raised); }
-  .game__btn svg { width: 20px; height: 20px; }
+  .game__btn:hover { background: var(--surface-raised); color: var(--text); }
+  .game__btn svg { width: 18px; height: 18px; }
+  :global([data-theme="windows"]) .game__btn { border-radius: 4px; }
+
+  .extra { margin-top: 22px; }
+  /* Labels and lists as the projects window's "Built with" and its stack */
+  .extra__label { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
+  .extra__desc { max-width: 62ch; margin: 0 0 4px; font-size: 16px; line-height: 1.65; }
+  .extra--lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 18px 24px; }
+  .stack { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+  .stack li::before { content: "+ "; color: var(--prompt-user); }
+  .cmds { margin: 0; padding: 0; list-style: none; }
+
+  /* The installer's components, each a link to its step */
+  .included { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 0 12px; margin: 0; padding: 0; list-style: none; }
+  .included a { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; min-height: 44px; padding: 8px 0; color: var(--text); font-size: 16px; text-decoration: none; }
+  .included a::before { content: "+"; color: var(--prompt-user); }
+  .included__name { border-bottom: 1px dashed var(--accent); }
+  .included__text { flex-basis: 100%; padding-left: 2ch; color: var(--text-2); font-size: 14px; }
+  .included a:hover .included__name { color: var(--accent-hover); border-bottom-style: solid; }
 
   .notes {
     margin-top: 20px;
