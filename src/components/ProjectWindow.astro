@@ -85,6 +85,8 @@ function fileSize(publicPath: string) {
     flex-direction: column;
     max-width: 1180px;
   }
+  /* The height of the tallest project, measured by the script, so switching tabs never resizes the window */
+  .win[data-ready] { height: var(--fit, auto); }
   /* Room to fit the window to the screen: the panel scrolls inside it instead */
   @media (min-width: 768px) and (min-height: 600px) {
     .win[data-ready] { max-height: calc(100svh - var(--taskbar-h) - 48px); }

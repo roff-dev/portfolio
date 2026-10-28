@@ -24,6 +24,29 @@ export function startProjectWindow(section: HTMLElement) {
   });
   win.dataset.ready = '';
 
+  /**
+   * The window keeps the height of its tallest project, so it stays the same size whichever tab is open. All the
+   * panels are shown for a moment to measure them, within one frame so nothing flickers. The cap in the CSS still
+   * applies: on a short screen the window stops at the screen and the project scrolls inside it.
+   */
+  function fitTallest() {
+    win.style.removeProperty('--fit');
+    const chrome = win.offsetHeight - panelsBox.offsetHeight;
+    const shown = panels.map((panel) => panel.hidden);
+    panels.forEach((panel) => { panel.hidden = false; });
+    const tallest = Math.max(...panels.map((panel) => panel.offsetHeight));
+    panels.forEach((panel, i) => { panel.hidden = shown[i]!; });
+    win.style.setProperty('--fit', `${Math.ceil(tallest + chrome)}px`);
+  }
+  // Text wraps differently at each width, and the fonts change it once they arrive
+  let width = 0;
+  new ResizeObserver(([entry]) => {
+    if (Math.round(entry!.contentRect.width) === width) return;
+    width = Math.round(entry!.contentRect.width);
+    fitTallest();
+  }).observe(win);
+  document.fonts.ready.then(fitTallest);
+
   function select(i: number, { focus = false, updateHash = false } = {}) {
     tabs.forEach((tab, j) => {
       const on = i === j;
