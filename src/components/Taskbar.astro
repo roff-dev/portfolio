@@ -184,18 +184,18 @@ const dock = (await portfolioProjects()).map(({ id, data }) => {
   .start img { width: 26px; height: 26px; }
   .start:hover img { filter: drop-shadow(0 0 6px rgba(50, 50, 50, .6)); transform: scale(1.05) translateY(-1px); }
 
-  /* The pages, by name, with the old nav's hover: a line drawing in from each corner, both lines for the page you're on */
-  .pages a { min-height: 32px; padding: 0 10px; font-size: 14px; letter-spacing: -1px; }
+  /* The pages, by name, with the old nav's hover (a line drawing in from each corner); the page you're on is
+     highlighted, like the open file in the code tree */
+  .pages a { min-height: 32px; padding: 0 10px; border-radius: 6px; font-size: 14px; letter-spacing: -1px; }
   .pages a::before,
   .pages a::after { content: ""; position: absolute; width: 0; height: 2px; background: var(--muted); transition: width .3s ease; }
   .pages a::before { top: 2px; left: 0; }
   .pages a::after { bottom: 2px; right: 0; }
   @media (hover: hover) {
-    .pages a:hover::before,
-    .pages a:hover::after { width: 100%; }
+    .pages a:not([aria-current="page"]):hover::before,
+    .pages a:not([aria-current="page"]):hover::after { width: 100%; }
   }
-  .pages a[aria-current="page"]::before,
-  .pages a[aria-current="page"]::after { width: 100%; background: var(--text-2); }
+  .pages a[aria-current="page"] { background: var(--surface-raised); }
 
   .taskbar__divider { display: none; }
 
@@ -256,17 +256,15 @@ const dock = (await portfolioProjects()).map(({ id, data }) => {
   :global([data-theme="windows"]) .start:hover img { filter: none; transform: none; }
   :global([data-theme="windows"]) .taskbar__middle { justify-content: center; gap: 8px; }
 
-  /* Taskbar buttons: a soft tile on hover, and the Windows blue pill under the page you're on */
+  /* Taskbar buttons: a soft tile on hover, and a stronger one for the page you're on */
   :global([data-theme="windows"]) .pages ul { gap: 2px; }
   :global([data-theme="windows"]) .pages a { min-height: 44px; padding: 0 12px; border-radius: 4px; font-size: 15px; letter-spacing: 0; }
-  :global([data-theme="windows"]) .pages a::before { display: none; }
-  :global([data-theme="windows"]) .pages a::after { width: 0; left: 50%; right: auto; bottom: 3px; height: 3px; translate: -50% 0; border-radius: 2px; background: var(--accent); transition: width .2s ease; }
-  :global([data-theme="windows"]) .pages a[aria-current="page"]::after { width: 16px; }
+  :global([data-theme="windows"]) .pages a::before,
+  :global([data-theme="windows"]) .pages a::after { display: none; }
   @media (hover: hover) {
     :global([data-theme="windows"]) .pages a:hover { background: rgba(0, 0, 0, .05); }
-    :global([data-theme="windows"]) .pages a:hover::after { width: 0; }
-    :global([data-theme="windows"]) .pages a[aria-current="page"]:hover::after { width: 16px; }
   }
+  :global([data-theme="windows"]) .pages a[aria-current="page"] { background: var(--surface-raised); }
 
   :global([data-theme="windows"]) .taskbar__divider { display: block; width: 1px; height: 24px; background: rgba(0, 0, 0, .14); }
 
